@@ -9,6 +9,13 @@ licence: gplv3, see licence.txt file
 """
 # pylint: disable=C0103, C0301, C0111, R0903
 
+
+# for usage with python2 and python3
+from __future__ import print_function    # (at top of module)
+from past.builtins import basestring    # pip install future
+from builtins import input
+
+
 #creats vars
 class var(object): # prolog variable
     def __init__(self, name=None):
@@ -202,7 +209,7 @@ def ask(predicate, infolist, bounds, cut_count):
     if cut_count[0] > 0:
         yield False, bounds #cut accured
     elif predicate not in assertz_data:
-        print "Warning -- no clause for ", predicate
+        print("Warning -- no clause for ", predicate)
         yield False, bounds
     else:
         contains = assertz_data[predicate]
@@ -235,7 +242,7 @@ def ask_print(predicate, infolist, bounds):
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
         if t:
-            print formatl(infolist, new_bounds)
+            print(formatl(infolist, new_bounds))
 
 # pylint: disable=C0413
 # modified from PyLog
@@ -350,15 +357,15 @@ def imp(iii):
 def load_file(f):
     ff = open(f)
     for line in ff:
-        print "#loaded: ", line.strip()
+        print("#loaded: ", line.strip())
         imp(line)
 
 def prolog():
-    print "#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)"
-    print "atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]"
-    print "also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,empty))"
+    print("#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)")
+    print("atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]")
+    print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,empty))")
     while 1:
-        command = raw_input("PyProlog==> ")
+        command = input("PyProlog==> ")
         try:
             t, f = imp(command)
             if not t:
@@ -367,9 +374,9 @@ def prolog():
                 load_file(f+'.pl')
 
         except RuntimeError as re:
-            print "Runtime Error: ", re
+            print("Runtime Error: ", re)
         except ParseException as re:
-            print "ParseExeption: ", re
+            print("ParseExeption: ", re)
 
 #fresh database, adding build in predicates cut and is
 def init_data():
