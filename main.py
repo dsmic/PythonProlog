@@ -10,11 +10,15 @@ licence: gplv3, see licence.txt file
 # pylint: disable=C0103, C0301, C0111, R0903
 
 
+# pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
 from past.builtins import basestring    # pip install future
 from builtins import input
+# pylint: enable=W0622
 
+# uncomment to add some editing features to the input command
+# import readline #@UnusedVariable
 
 #creats vars
 class var(object): # prolog variable
@@ -390,6 +394,7 @@ load_file('test.pl')
 
 # start prolog promt
 init_data()
+
 prolog()
 #load a test file
 
