@@ -211,6 +211,7 @@ def ask_list(list_of_calls, bounds, cut_count):
     yield False, bounds
 
 
+#it is orderd by predicate answerd. The first is the predicate wich is answerd first.
 track_for_ai = [[]]
 
 #cut_count variable, and all fail, if >1 ?
@@ -227,17 +228,16 @@ def ask(predicate, infolist, bounds, cut_count):
         if track_for_ai:
             local_track = track_for_ai[0][:] # copy
             local_count = 0
-            local_added = False
         contains = assertz_data[predicate]
         if isinstance(contains, calc): #is predicate
             #print "iiiii", infolist
             t, new_bounds = contains.do_calc(infolist, bounds)
             if t:
                 if track_for_ai:
-                    if local_added:
+                    if local_count > 0:
                         track_for_ai[0] = track_for_ai[0][:-1]
-                    local_added = True
-                    track_for_ai[0] += [(predicate, 0)]
+                    local_count += 1
+                    track_for_ai[0] += [(predicate, formatl(infolist, bounds, {}))]
                 yield t, new_bounds
             else:
                 if track_for_ai:
@@ -250,9 +250,9 @@ def ask(predicate, infolist, bounds, cut_count):
                 if track_for_ai:
                     t_ai, _ = xx
                     if t_ai:
-                        if local_added:
+                        if local_count > 0:
                             track_for_ai[0] = track_for_ai[0][:-1]
-                        local_added = True
+                        local_count += 1
                         track_for_ai[0] += [(predicate, 0)]
                     else:
                         track_for_ai[0] = local_track
@@ -266,28 +266,29 @@ def ask(predicate, infolist, bounds, cut_count):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
                         xx = ask_list(line.B, new_bounds, [0])
+                        if track_for_ai:
+                            last_bounds = new_bounds
                         for x0 in xx:
                             if track_for_ai:
-                                t_ai, _ = x0
+                                t_ai, b_ai = x0
                                 if t_ai:
-                                    if local_added:
+                                    if local_count > 1:
                                         track_for_ai[0] = track_for_ai[0][:-1]
-                                    local_added = True
-                                    track_for_ai[0] += [(predicate, local_count)]
+                                    track_for_ai[0] += [(predicate, local_count, formatl(line.A, last_bounds, {}))]
+                                    last_bounds = b_ai
                                 else:
                                     track_for_ai[0] = local_track
                             yield x0
                     if track_for_ai:
                         track_for_ai[0] = local_track
                     yield False, bounds
-                else:
+                else: #fact
                     t, new_bounds = match(infolist, line, bounds)
                     if t:
                         if track_for_ai:
-                            if local_added:
+                            if local_count >1:
                                 track_for_ai[0] = track_for_ai[0][:-1]
-                            local_added = True
-                            track_for_ai[0] += [(predicate, local_count)]
+                            track_for_ai[0] += [(predicate, local_count, formatl(infolist, bounds, {}))]
                         yield True, new_bounds
                     else:
                         if track_for_ai:
