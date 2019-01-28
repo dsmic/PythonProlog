@@ -171,9 +171,9 @@ def formatl(X_orig, bounds, var_nums):
         closeb = "]"
     while isinstance(X, l):
         if isinstance(X.A, l):
-            ret += komma+formatl(X.A, bounds, var_nums)
+            ret += komma + formatl(X.A, bounds, var_nums)
         else:
-            ret += komma+formatl(X.A, bounds, var_nums)
+            ret += komma + formatl(X.A, bounds, var_nums)
         X = X.B
         komma = ","
     if isinstance(X, list):
@@ -184,13 +184,12 @@ def formatl(X_orig, bounds, var_nums):
             koma2 = ","
         return ret + "]"
     if isinstance(X, var):
-        v_num=0
+        v_num = 0
         if X in var_nums:
-            v_num=var_nums[X]
+            v_num = var_nums[X]
         else:
-            v_num=len(var_nums)
+            v_num = len(var_nums)
             var_nums[X] = v_num
-            
         ret += komma+"_"+str(v_num)
     elif X != None:
         ret += komma+str(X)
