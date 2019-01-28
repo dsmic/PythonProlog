@@ -341,7 +341,7 @@ def imp(iii):
     if ii['result'] == 'fact':
         decl = ii['decl']
         predicate = decl[0]
-        assertz(predicate, create_l(decl[1], local_vars))
+        assertz(predicate, create_l(decl[1].asList(), local_vars))
     elif ii['result'] == 'query':
         query = ii['stmt']
         predicate = query[0]
@@ -402,7 +402,7 @@ load_file('test.pl')
 init_data()
 
 prolog()
-#load a test file
+
 
 
 # Examples which should work
