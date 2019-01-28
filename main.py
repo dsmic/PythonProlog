@@ -161,7 +161,7 @@ def add_rule(predicate, infolist, tail): # tail is a list with c(predicate, info
         assertz_data[predicate] = [rule(infolist, tail)]
 
 #make a string from a prolog l object (list)print "calc",contains.A, final_bound(contains.A, new_bounds)
-def formatl(X_orig, bounds):
+def formatl(X_orig, bounds, var_nums):
     X = final_bound(X_orig, bounds)
     ret = ""
     komma = ""
@@ -171,20 +171,27 @@ def formatl(X_orig, bounds):
         closeb = "]"
     while isinstance(X, l):
         if isinstance(X.A, l):
-            ret += komma+formatl(X.A, bounds)
+            ret += komma+formatl(X.A, bounds, var_nums)
         else:
-            ret += komma+formatl(X.A, bounds)
+            ret += komma+formatl(X.A, bounds, var_nums)
         X = X.B
         komma = ","
     if isinstance(X, list):
         ret += "["
         koma2 = ""
         for e in X:
-            ret += koma2 + formatl(e, bounds)
+            ret += koma2 + formatl(e, bounds, var_nums)
             koma2 = ","
         return ret + "]"
     if isinstance(X, var):
-        ret += komma+"_" # bound variables are not identified, all are _
+        v_num=0
+        if X in var_nums:
+            v_num=var_nums[X]
+        else:
+            v_num=len(var_nums)
+            var_nums[X] = v_num
+            
+        ret += komma+"_"+str(v_num)
     elif X != None:
         ret += komma+str(X)
     return ret+closeb
@@ -246,7 +253,7 @@ def ask_print(predicate, infolist, bounds):
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
         if t:
-            print(formatl(infolist, new_bounds))
+            print(formatl(infolist, new_bounds, {}))
 
 # pylint: disable=C0413
 # modified from PyLog
