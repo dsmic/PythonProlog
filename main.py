@@ -217,7 +217,7 @@ track_for_ai = [[]]
 #
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
-    # pylint: disable=R0101, R0912, R0915
+    # pylint: disable=R0101, R0912, R0915, R0914
     if cut_count[0] > 1:
         yield False, bounds #cut accured
     elif predicate not in assertz_data:
@@ -227,13 +227,17 @@ def ask(predicate, infolist, bounds, cut_count):
         if track_for_ai:
             local_track = track_for_ai[0][:] # copy
             local_count = 0
+            local_added = False
         contains = assertz_data[predicate]
         if isinstance(contains, calc): #is predicate
             #print "iiiii", infolist
             t, new_bounds = contains.do_calc(infolist, bounds)
             if t:
                 if track_for_ai:
-                    track_for_ai[0] = local_track+[(predicate, 0)]
+                    if local_added:
+                        track_for_ai[0] = track_for_ai[0][:-1]
+                    local_added = True
+                    track_for_ai[0] += [(predicate, 0)]
                 yield t, new_bounds
             else:
                 if track_for_ai:
@@ -246,7 +250,10 @@ def ask(predicate, infolist, bounds, cut_count):
                 if track_for_ai:
                     t_ai, _ = xx
                     if t_ai:
-                        track_for_ai[0] = local_track+[(predicate, 0)]
+                        if local_added:
+                            track_for_ai[0] = track_for_ai[0][:-1]
+                        local_added = True
+                        track_for_ai[0] += [(predicate, 0)]
                     else:
                         track_for_ai[0] = local_track
                 yield xx
@@ -263,7 +270,10 @@ def ask(predicate, infolist, bounds, cut_count):
                             if track_for_ai:
                                 t_ai, _ = x0
                                 if t_ai:
-                                    track_for_ai[0] = local_track+[(predicate, local_count)]
+                                    if local_added:
+                                        track_for_ai[0] = track_for_ai[0][:-1]
+                                    local_added = True
+                                    track_for_ai[0] += [(predicate, local_count)]
                                 else:
                                     track_for_ai[0] = local_track
                             yield x0
@@ -274,7 +284,10 @@ def ask(predicate, infolist, bounds, cut_count):
                     t, new_bounds = match(infolist, line, bounds)
                     if t:
                         if track_for_ai:
-                            track_for_ai[0] = local_track+[(predicate, local_count)]
+                            if local_added:
+                                track_for_ai[0] = track_for_ai[0][:-1]
+                            local_added = True
+                            track_for_ai[0] += [(predicate, local_count)]
                         yield True, new_bounds
                     else:
                         if track_for_ai:
