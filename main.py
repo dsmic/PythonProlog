@@ -211,12 +211,11 @@ def ask_list(list_of_calls, bounds, cut_count):
     yield False, bounds
 
 #cut_count variable, and all fail, if >1 ?
-#two cuts in one rule make no sense and would break this concept !!!
 #
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912
-    if cut_count[0] > 0:
+    if cut_count[0] > 1:
         yield False, bounds #cut accured
     elif predicate not in assertz_data:
         print("Warning -- no clause for ", predicate)
@@ -230,8 +229,10 @@ def ask(predicate, infolist, bounds, cut_count):
                 yield t, new_bounds
             yield False, bounds
         elif isinstance(contains, cut): #cut predicate
-            cut_count[0] += 1
-            yield True, bounds
+            cut_count[0] = 0 # the last cut overwrites all other cuts in the rule
+            for xx in iter([(True, bounds),(False, bounds)]):
+                cut_count[0] += 1 #returning True and False and increasing count every time
+                yield xx
         else:
             for lll in contains:
                 line = renew_vars(lll, {})
@@ -371,7 +372,7 @@ def load_file(f):
         imp(line)
 
 def prolog():
-    print("#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)")
+    print("\n#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)")
     print("atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]")
     print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,empty))")
     while 1:
