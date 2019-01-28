@@ -210,50 +210,86 @@ def ask_list(list_of_calls, bounds, cut_count):
                 yield t, new_bounds
     yield False, bounds
 
+
+track_for_ai = [[]]
+
 #cut_count variable, and all fail, if >1 ?
 #
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
-    # pylint: disable=R0101, R0912
+    # pylint: disable=R0101, R0912, R0915
     if cut_count[0] > 1:
         yield False, bounds #cut accured
     elif predicate not in assertz_data:
         print("Warning -- no clause for ", predicate)
         yield False, bounds
     else:
+        if track_for_ai:
+            local_track = track_for_ai[0][:] # copy
+            local_count = 0
         contains = assertz_data[predicate]
         if isinstance(contains, calc): #is predicate
             #print "iiiii", infolist
             t, new_bounds = contains.do_calc(infolist, bounds)
             if t:
+                if track_for_ai:
+                    track_for_ai[0] = local_track+[(predicate, 0)]
                 yield t, new_bounds
-            yield False, bounds
+            else:
+                if track_for_ai:
+                    track_for_ai[0] = local_track
+                yield False, bounds
         elif isinstance(contains, cut): #cut predicate
             cut_count[0] = 0 # the last cut overwrites all other cuts in the rule
-            for xx in iter([(True, bounds),(False, bounds)]):
+            for xx in iter([(True, bounds), (False, bounds)]):
                 cut_count[0] += 1 #returning True and False and increasing count every time
+                if track_for_ai:
+                    t_ai, _ = xx
+                    if t_ai:
+                        track_for_ai[0] = local_track+[(predicate, 0)]
+                    else:
+                        track_for_ai[0] = local_track
                 yield xx
         else:
             for lll in contains:
+                if track_for_ai:
+                    local_count += 1
                 line = renew_vars(lll, {})
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
                         xx = ask_list(line.B, new_bounds, [0])
                         for x0 in xx:
+                            if track_for_ai:
+                                t_ai, _ = x0
+                                if t_ai:
+                                    track_for_ai[0] = local_track+[(predicate, local_count)]
+                                else:
+                                    track_for_ai[0] = local_track
                             yield x0
+                    if track_for_ai:
+                        track_for_ai[0] = local_track
                     yield False, bounds
                 else:
                     t, new_bounds = match(infolist, line, bounds)
                     if t:
+                        if track_for_ai:
+                            track_for_ai[0] = local_track+[(predicate, local_count)]
                         yield True, new_bounds
-                    yield False, bounds
+                    else:
+                        if track_for_ai:
+                            track_for_ai[0] = local_track
+                        yield False, bounds
 
 def ask_print(predicate, infolist, bounds):
+    if track_for_ai:
+        track_for_ai[0] = []
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
         if t:
             print(formatl(infolist, new_bounds, {}))
+            if track_for_ai:
+                print("track_for_ai", track_for_ai[0])
 
 # pylint: disable=C0413
 # modified from PyLog
@@ -402,9 +438,9 @@ def print_assertz_data():
         if predicate != 'is' and predicate != 'cut':
             for fact_or_rule in assertz_data[predicate]:
                 if isinstance(fact_or_rule, rule):
-                    print(predicate,formatl(fact_or_rule.A, {}, {}),formatl(fact_or_rule.B, {}, {}))
+                    print(predicate, formatl(fact_or_rule.A, {}, {}), formatl(fact_or_rule.B, {}, {}))
                 else:
-                    print(predicate,formatl(fact_or_rule, {}, {}))
+                    print(predicate, formatl(fact_or_rule, {}, {}))
 
 
 # execute a test before
