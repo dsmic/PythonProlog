@@ -395,14 +395,26 @@ def init_data():
     assertz_data['is'] = calc()
     assertz_data['cut'] = cut()
 
+
+# helper functions for AI
+def print_assertz_data():
+    for predicate in assertz_data:
+        if predicate != 'is' and predicate != 'cut':
+            for fact_or_rule in assertz_data[predicate]:
+                if isinstance(fact_or_rule, rule):
+                    print(predicate,formatl(fact_or_rule.A, {}, {}),formatl(fact_or_rule.B, {}, {}))
+                else:
+                    print(predicate,formatl(fact_or_rule, {}, {}))
+
+
 # execute a test before
 init_data()
 load_file('test.pl')
+print_assertz_data()
 
 # start prolog promt
-init_data()
-
-prolog()
+#init_data()
+#prolog()
 
 
 
