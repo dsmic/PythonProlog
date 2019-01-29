@@ -212,7 +212,7 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
-track_for_ai = []
+track_for_ai = [[]]
 
 #cut_count variable, and all fail, if >1 ?
 #
