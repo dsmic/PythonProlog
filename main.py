@@ -459,6 +459,11 @@ def print_assertz_data():
                 else:
                     print(predicate, formatl(fact_or_rule, {}, {}))
 
+try:
+    execfile('config.py')
+except:
+    print("no config.py file loaded")
+    pass
 
 # execute a test before
 init_data()
