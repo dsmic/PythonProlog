@@ -239,8 +239,11 @@ def ask(predicate, infolist, bounds, cut_count):
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
-                        xx = ask_list(line.B, new_bounds, [0])
+                        cut_count_local = [0]
+                        xx = ask_list(line.B, new_bounds, cut_count_local)
                         for x0 in xx:
+                            if cut_count_local[0]>1:
+                                break
                             yield x0
                     yield False, bounds
                 else:
