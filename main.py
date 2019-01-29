@@ -212,7 +212,7 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
-track_for_ai = [[]]
+track_for_ai = []
 
 #cut_count variable, and all fail, if >1 ?
 #
@@ -265,10 +265,13 @@ def ask(predicate, infolist, bounds, cut_count):
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
-                        xx = ask_list(line.B, new_bounds, [0])
+                        cut_count_local = [0]
+                        xx = ask_list(line.B, new_bounds, cut_count_local)
                         if track_for_ai:
                             last_bounds = new_bounds
                         for x0 in xx:
+                            if cut_count_local[0]>1:
+                                break
                             if track_for_ai:
                                 t_ai, b_ai = x0
                                 if t_ai:
