@@ -259,13 +259,13 @@ def ask(predicate, infolist, bounds, cut_count):
                 yield xx
         else:
             for lll in contains:
+                cut_count_local = [0]
                 if track_for_ai:
                     local_count += 1
                 line = renew_vars(lll, {})
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
-                        cut_count_local = [0]
                         xx = ask_list(line.B, new_bounds, cut_count_local)
                         if track_for_ai:
                             last_bounds = new_bounds
@@ -284,6 +284,8 @@ def ask(predicate, infolist, bounds, cut_count):
                             yield x0
                     if track_for_ai:
                         track_for_ai[0] = local_track
+                    if cut_count_local[0]>1:
+                        break
                     yield False, bounds
                 else: #fact
                     t, new_bounds = match(infolist, line, bounds)
@@ -297,7 +299,8 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             track_for_ai[0] = local_track
                         yield False, bounds
-
+                yield False, bounds
+                
 def ask_print(predicate, infolist, bounds):
     if track_for_ai:
         track_for_ai[0] = []
