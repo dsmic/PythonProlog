@@ -235,11 +235,11 @@ def ask(predicate, infolist, bounds, cut_count):
                 yield xx
         else:
             for lll in contains:
+                cut_count_local = [0]
                 line = renew_vars(lll, {})
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
                     if t:
-                        cut_count_local = [0]
                         xx = ask_list(line.B, new_bounds, cut_count_local)
                         for x0 in xx:
                             if cut_count_local[0]>1:
@@ -251,7 +251,10 @@ def ask(predicate, infolist, bounds, cut_count):
                     if t:
                         yield True, new_bounds
                     yield False, bounds
-
+                if cut_count_local[0]>1:
+                    break
+                yield False, bounds
+                
 def ask_print(predicate, infolist, bounds):
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
