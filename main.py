@@ -7,14 +7,13 @@ Created on Sat Jan 19 15:41:50 2019
 licence: gplv3, see licence.txt file
 
 """
-# pylint: disable=C0103, C0301, C0111, R0903
-
+# pylint: disable=C0103, C0301, C0111, R0903, C1801
 
 # pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
-from past.builtins import basestring    # pip install future
 from builtins import input
+from past.builtins import basestring    # pip install future
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
@@ -85,8 +84,7 @@ def final_bound(A, bounds):
         return A # None is not allowed as prolog object !!!
     if A in bounds:
         return final_bound(bounds[A], bounds)
-    else:
-        return A
+    return A
 
 def get_new_var(name, local_vars):
     if name not in local_vars:
@@ -105,8 +103,7 @@ def renew_vars(line, local_vars):
     elif isinstance(line, list):
         if len(line) == 0:
             return []
-        else:
-            return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
+        return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
     elif line is None:
         return None
     elif isinstance(line, basestring):
@@ -213,13 +210,21 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
 track_for_ai = [[]]
+limit_recursion_with_track_for_ai_length = [19]
 
 #cut_count variable, and all fail, if >1 ?
 #
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
-    if cut_count[0] > 1:
+
+    #print(len(track_for_ai[0]), limit_recursion_with_track_for_ai_length[0])
+    if limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
+        #print(len(track_for_ai[0]), limit_recursion_with_track_for_ai_length[0])
+        yield False, bounds
+        # are facts trackt double now?
+
+    elif cut_count[0] > 1:
         yield False, bounds #cut accured
     elif predicate not in assertz_data:
         print("Warning -- no clause for ", predicate)
@@ -237,6 +242,7 @@ def ask(predicate, infolist, bounds, cut_count):
                     if local_count > 0:
                         track_for_ai[0] = track_for_ai[0][:-1]
                     local_count += 1
+                    #print("1")
                     track_for_ai[0] += [(predicate, formatl(infolist, bounds, {}))]
                 yield t, new_bounds
             else:
@@ -253,12 +259,14 @@ def ask(predicate, infolist, bounds, cut_count):
                         if local_count > 0:
                             track_for_ai[0] = track_for_ai[0][:-1]
                         local_count += 1
+                        #print("2")
                         track_for_ai[0] += [(predicate, 0)]
                     else:
                         track_for_ai[0] = local_track
                 yield xx
         else:
             for lll in contains:
+                # check if correct to yield every output ??? only the last??
                 cut_count_local = [0]
                 if track_for_ai:
                     local_count += 1
@@ -270,13 +278,14 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             last_bounds = new_bounds
                         for x0 in xx:
-                            if cut_count_local[0]>1:
+                            if cut_count_local[0] > 1:
                                 break
                             if track_for_ai:
                                 t_ai, b_ai = x0
                                 if t_ai:
                                     if local_count > 1:
                                         track_for_ai[0] = track_for_ai[0][:-1]
+                                    #print("3")
                                     track_for_ai[0] += [(predicate, local_count, formatl(line.A, last_bounds, {}))]
                                     last_bounds = b_ai
                                 else:
@@ -284,15 +293,16 @@ def ask(predicate, infolist, bounds, cut_count):
                             yield x0
                     if track_for_ai:
                         track_for_ai[0] = local_track
-                    if cut_count_local[0]>1:
+                    if cut_count_local[0] > 1:
                         break
                     yield False, bounds
                 else: #fact
                     t, new_bounds = match(infolist, line, bounds)
                     if t:
                         if track_for_ai:
-                            if local_count >1:
+                            if local_count > 1:
                                 track_for_ai[0] = track_for_ai[0][:-1]
+                            #print("4")
                             track_for_ai[0] += [(predicate, local_count, formatl(infolist, bounds, {}))]
                         yield True, new_bounds
                     else:
@@ -300,7 +310,7 @@ def ask(predicate, infolist, bounds, cut_count):
                             track_for_ai[0] = local_track
                         yield False, bounds
                 yield False, bounds
-                
+
 def ask_print(predicate, infolist, bounds):
     if track_for_ai:
         track_for_ai[0] = []
@@ -463,15 +473,15 @@ def print_assertz_data():
                     print(predicate, formatl(fact_or_rule, {}, {}))
 
 try:
-    execfile('config.py')
-except:
+# pylint: disable=W0122
+    exec(open('config.py').read())
+except FileNotFoundError:
     print("no config.py file loaded")
-    pass
 
 # execute a test before
 init_data()
 load_file('test.pl')
-print_assertz_data()
+#print_assertz_data()
 
 # start prolog promt
 #init_data()
