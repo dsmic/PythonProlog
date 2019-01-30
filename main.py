@@ -210,19 +210,15 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
 track_for_ai = [[]]
-limit_recursion_with_track_for_ai_length = [19]
+limit_recursion_with_track_for_ai_length = [9]
 
 #cut_count variable, and all fail, if >1 ?
-#
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
 
-    #print(len(track_for_ai[0]), limit_recursion_with_track_for_ai_length[0])
     if limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
-        #print(len(track_for_ai[0]), limit_recursion_with_track_for_ai_length[0])
         yield False, bounds
-        # are facts trackt double now?
 
     elif cut_count[0] > 1:
         yield False, bounds #cut accured
@@ -235,14 +231,12 @@ def ask(predicate, infolist, bounds, cut_count):
             local_count = 0
         contains = assertz_data[predicate]
         if isinstance(contains, calc): #is predicate
-            #print "iiiii", infolist
             t, new_bounds = contains.do_calc(infolist, bounds)
             if t:
                 if track_for_ai:
                     if local_count > 0:
                         track_for_ai[0] = track_for_ai[0][:-1]
                     local_count += 1
-                    #print("1")
                     track_for_ai[0] += [(predicate, formatl(infolist, bounds, {}))]
                 yield t, new_bounds
             else:
@@ -259,7 +253,6 @@ def ask(predicate, infolist, bounds, cut_count):
                         if local_count > 0:
                             track_for_ai[0] = track_for_ai[0][:-1]
                         local_count += 1
-                        #print("2")
                         track_for_ai[0] += [(predicate, 0)]
                     else:
                         track_for_ai[0] = local_track
@@ -285,7 +278,6 @@ def ask(predicate, infolist, bounds, cut_count):
                                 if t_ai:
                                     if local_count > 1:
                                         track_for_ai[0] = track_for_ai[0][:-1]
-                                    #print("3")
                                     track_for_ai[0] += [(predicate, local_count, formatl(line.A, last_bounds, {}))]
                                     last_bounds = b_ai
                                 else:
@@ -302,7 +294,6 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             if local_count > 1:
                                 track_for_ai[0] = track_for_ai[0][:-1]
-                            #print("4")
                             track_for_ai[0] += [(predicate, local_count, formatl(infolist, bounds, {}))]
                         yield True, new_bounds
                     else:
