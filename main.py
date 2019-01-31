@@ -219,8 +219,8 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
-track_for_ai = [[]]
-limit_recursion_with_track_for_ai_length = [29]
+track_for_ai = None
+limit_recursion_with_track_for_ai_length = None
 
 #cut_count variable, and all fail, if >1 ?
 #generates the solutions
