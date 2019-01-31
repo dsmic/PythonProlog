@@ -62,6 +62,11 @@ class calc(object):
                     F.write(formatl(op2, bounds, {})+"\n")
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
+            if op == 'lower':
+                if int(final_bound(op1,bounds)) < int(final_bound(op2,bounds)):
+                    return True, str(1)
+                else:
+                    return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -177,6 +182,7 @@ def formatl(X_orig, bounds, var_nums):
         ret = "["
         closeb = "]"
     while isinstance(X, l):
+        print(X.A, final_bound(X.A, bounds))
         if isinstance(X.A, l):
             ret += komma + formatl(X.A, bounds, var_nums)
         else:
