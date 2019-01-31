@@ -113,16 +113,16 @@ def renew_vars(line, local_vars):
         return line
     raise Exception("clause with illegal structure " + str(line))
 
-def check_if_var_in_object(final_var, final_other, bounds):
-    final_other = final_bound(final_other,bounds)
+def check_if_var_in_object(final_var, final_other_in, bounds):
+    final_other = final_bound(final_other_in,bounds)
     if isinstance(final_other, l):
         if check_if_var_in_object(final_var, final_other.A, bounds):
-            return False
+            return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
-            return False
+            return True
     elif final_var==final_other:
-        return False
-    return True
+        return True
+    return False
    
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
@@ -134,11 +134,11 @@ def match(A, B, bounds):
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
     if isinstance(final_A, var): # not bound
-        if check_if_var_in_object(final_A, final_B, bounds):
+        if not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
     else:
         if isinstance(final_B, var):
-            if check_if_var_in_object(final_B, final_A, bounds):
+            if not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
