@@ -53,6 +53,15 @@ class calc(object):
             op = calc_object.A
             op1 = calc_object.B.A
             op2 = calc_object.B.B.A
+            if op == 'write': #used for changing to much and allow writing to files add .tmp for security reasons
+                # op1 is filename, op2 is object to print
+                F=open(op1+".tmp", 'a')
+                if op2 == 'track': # if the second object is track, the track_for_ai list is written to the file
+                    F.write(str(track_for_ai[0]) + "\n")
+                else:
+                    F.write(formatl(op2, bounds, {})+"\n")
+                F.close()
+                return True, str(1) #return 1, no sense in real calculations !!
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -67,6 +76,7 @@ class calc(object):
                         return True, str(int(op1)/int(op2))
                     elif op == 'mod':
                         return True, str(int(op1) % int(op2))
+                    
             return False, calc_object
 
     def do_calc(self, term, bounds):
@@ -210,7 +220,7 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
 track_for_ai = [[]]
-limit_recursion_with_track_for_ai_length = [9]
+limit_recursion_with_track_for_ai_length = [29]
 
 #cut_count variable, and all fail, if >1 ?
 #generates the solutions
