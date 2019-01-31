@@ -1,3 +1,5 @@
+f([d,f,D]).
+f(X)?
 eqq(X,X).
 eqn0([p,empty], ee).
 eqn0([p,[g,X,G]],[mult,X,[p,G]]).
@@ -17,5 +19,5 @@ eqn1([mmod,X,Y],[mmod,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eq
 eqn1([add,X,Y],[add,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(X,X1,C1,DD), eqn1(Y,Y1,C1,DD).
 eqn1([mult,X,Y],[mult,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(X,X1,C1,DD), eqn1(Y,Y1,C1,DD).
 eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn0(X,Z),eqn1(Z,Y,C1,DD).
-eqn2(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn0(Z,X),eqn1(Z,Y,C1,DD).
-eqn2(ee,Y,1,2)?
+eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn0(Z,X),eqn1(Z,Y,C1,DD).
+eqn1(ee,Y,1,3)?
