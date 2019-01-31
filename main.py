@@ -42,7 +42,7 @@ class cut(object):
 
 #marks calc for is
 class calc(object):
-    # pylint: disable=R0911
+    # pylint: disable=R0911, R0912
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
         calc_object = final_bound(calc_object, bounds)
@@ -55,7 +55,7 @@ class calc(object):
             op2 = calc_object.B.B.A
             if op == 'write': #used for changing to much and allow writing to files add .tmp for security reasons
                 # op1 is filename, op2 is object to print
-                F=open(op1+".tmp", 'a')
+                F = open(final_bound(op1,bounds)+".tmp", 'a')
                 if op2 == 'track': # if the second object is track, the track_for_ai list is written to the file
                     F.write(str(track_for_ai[0]) + "\n")
                 else:
@@ -63,10 +63,9 @@ class calc(object):
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
             if op == 'lower':
-                if int(final_bound(op1,bounds)) < int(final_bound(op2,bounds)):
+                if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
                     return True, str(1)
-                else:
-                    return False, str(0)
+                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -81,7 +80,7 @@ class calc(object):
                         return True, str(int(op1)/int(op2))
                     elif op == 'mod':
                         return True, str(int(op1) % int(op2))
-                    
+
             return False, calc_object
 
     def do_calc(self, term, bounds):
@@ -126,16 +125,16 @@ def renew_vars(line, local_vars):
     raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
-    final_other = final_bound(final_other_in,bounds)
+    final_other = final_bound(final_other_in, bounds)
     if isinstance(final_other, l):
         if check_if_var_in_object(final_var, final_other.A, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    elif final_var==final_other:
+    elif final_var == final_other:
         return True
     return False
-   
+
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     if A is None and B is None:
@@ -190,10 +189,7 @@ def formatl(X_orig, bounds, var_nums):
         ret = "["
         closeb = "]"
     while isinstance(X, l):
-        if isinstance(X.A, l):
-            ret += komma + formatl(X.A, bounds, var_nums)
-        else:
-            ret += komma + formatl(X.A, bounds, var_nums)
+        ret += komma + formatl(X.A, bounds, var_nums)
         X = X.B
         komma = ","
     if isinstance(X, list):
@@ -232,8 +228,8 @@ def ask_list(list_of_calls, bounds, cut_count):
 
 
 #it is orderd by predicate answerd. The first is the predicate wich is answerd first.
-track_for_ai = None
-limit_recursion_with_track_for_ai_length = None
+track_for_ai = [[]]
+limit_recursion_with_track_for_ai_length = [9999999]
 
 #cut_count variable, and all fail, if >1 ?
 #generates the solutions

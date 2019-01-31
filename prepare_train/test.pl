@@ -20,4 +20,5 @@ eqn1([add,X,Y],[add,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1
 eqn1([mult,X,Y],[mult,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(X,X1,C1,DD), eqn1(Y,Y1,C1,DD).
 eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn0(X,Z),eqn1(Z,Y,C1,DD).
 eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn0(Z,X),eqn1(Z,Y,C1,DD).
-eqn1(ee,Y,1,3)?
+eqn2(X,Y,CC,DD,F1,F2):-eqn1(X,Y,CC,DD),is(RR,[write,F1,Y]),is(RRR,[write,F2,track]).
+eqn2(ee,Y,1,3,tttx,tttt)?
