@@ -55,7 +55,7 @@ class calc(object):
             op2 = calc_object.B.B.A
             if op == 'write': #used for changing to much and allow writing to files add .tmp for security reasons
                 # op1 is filename, op2 is object to print
-                F = open(final_bound(op1,bounds)+".tmp", 'a')
+                F = open(final_bound(op1, bounds)+".tmp", 'a')
                 if op2 == 'track': # if the second object is track, the track_for_ai list is written to the file
                     F.write(str(track_for_ai[0]) + "\n")
                 else:
