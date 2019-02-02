@@ -20,11 +20,16 @@ import numpy as np
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.layers import Activation, Embedding
-from keras.layers import LSTM
+from keras.layers import LSTM, CuDNNLSTM
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+LSTM_use = CuDNNLSTM
+
+# uncomment the following to disable CuDNN support
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+#LSTM_use = LSTM
+###########################################
 
 vocab = {}
 count_chars = 0
@@ -149,8 +154,8 @@ hidden_size = 200
 model = Sequential()
 model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
 #model.add(Masking())
-model.add(LSTM(hidden_size, return_sequences=True))
-model.add(LSTM(max_output + 1, return_sequences=False))
+model.add(LSTM_use(hidden_size, return_sequences=True))
+model.add(LSTM_use(max_output + 1, return_sequences=False))
 model.add(Activation('softmax'))
 
 optimizer = Adam(lr=0.00001)
