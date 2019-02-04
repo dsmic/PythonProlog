@@ -16,8 +16,6 @@ from builtins import input
 from past.builtins import basestring    # pip install future
 # pylint: enable=W0622
 
-import sys
-
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
@@ -146,14 +144,16 @@ def match(A, B, bounds):
     new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
+    if final_A == final_B:
+        return True, bounds
     if isinstance(final_A, var): # not bound
-        if not check_if_var_in_object(final_A, final_B, bounds):
+        if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
         else:
             return False, bounds
     else:
         if isinstance(final_B, var):
-            if not check_if_var_in_object(final_B, final_A, bounds):
+            if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
             else:
                 return False, bounds
@@ -166,7 +166,6 @@ def match(A, B, bounds):
                     if t2:
                         return True, b3
                 return False, bounds
-            return final_A == final_B, bounds
     new_bounds.update(bounds)
     return True, new_bounds
 
@@ -424,7 +423,7 @@ def create_l(inlist, local_vars):
         o = get_new_var(o, local_vars)
     return l(o, create_l(inlist[1:], local_vars))
 
-def imp(iii, wait_for_enter = False):
+def imp(iii, wait_for_enter=False):
     if iii.strip() == '':
         return True, None
     local_vars = {}
