@@ -149,14 +149,16 @@ def match(A, B, bounds):
     if isinstance(final_A, var): # not bound
         if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
-        else:
-            return False, bounds
+            new_bounds.update(bounds)
+            return True, new_bounds
+        return False, bounds
     else:
         if isinstance(final_B, var):
             if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
-            else:
-                return False, bounds
+                new_bounds.update(bounds)
+                return True, new_bounds
+            return False, bounds
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
@@ -165,9 +167,7 @@ def match(A, B, bounds):
                     t2, b3 = match(final_A.B, final_B.B, b2)
                     if t2:
                         return True, b3
-                return False, bounds
-    new_bounds.update(bounds)
-    return True, new_bounds
+            return False, bounds
 
 
 assertz_data = {}
