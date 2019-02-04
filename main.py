@@ -132,13 +132,13 @@ def match(A, B, bounds):
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
     if isinstance(final_A, var): # not bound
-        if not check_if_var_in_object(final_A, final_B, bounds):
+        if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
         else:
             return False, bounds
     else:
         if isinstance(final_B, var):
-            if not check_if_var_in_object(final_B, final_A, bounds):
+            if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
             else:
                 return False, bounds
