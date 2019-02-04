@@ -13,8 +13,8 @@ licence: gplv3, see licence.txt file
 # pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
-from past.builtins import basestring    # pip install future
 from builtins import input
+from past.builtins import basestring    # pip install future
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
@@ -85,8 +85,7 @@ def final_bound(A, bounds):
         return A # None is not allowed as prolog object !!!
     if A in bounds:
         return final_bound(bounds[A], bounds)
-    else:
-        return A
+    return A
 
 def get_new_var(name, local_vars):
     if name not in local_vars:
@@ -105,8 +104,7 @@ def renew_vars(line, local_vars):
     elif isinstance(line, list):
         if len(line) == 0:
             return []
-        else:
-            return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
+        return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
     elif line is None:
         return None
     elif isinstance(line, basestring):
@@ -114,16 +112,16 @@ def renew_vars(line, local_vars):
     raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
-    final_other = final_bound(final_other_in,bounds)
+    final_other = final_bound(final_other_in, bounds)
     if isinstance(final_other, l):
         if check_if_var_in_object(final_var, final_other.A, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    elif final_var==final_other:
+    elif final_var == final_other:
         return True
     return False
-   
+
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     if A is None and B is None:
@@ -136,10 +134,14 @@ def match(A, B, bounds):
     if isinstance(final_A, var): # not bound
         if not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
+        else:
+            return False, bounds
     else:
         if isinstance(final_B, var):
             if not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
+            else:
+                return False, bounds
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
@@ -238,7 +240,7 @@ def ask(predicate, infolist, bounds, cut_count):
             yield False, bounds
         elif isinstance(contains, cut): #cut predicate
             cut_count[0] = 0 # the last cut overwrites all other cuts in the rule
-            for xx in iter([(True, bounds),(False, bounds)]):
+            for xx in iter([(True, bounds), (False, bounds)]):
                 cut_count[0] += 1 #returning True and False and increasing count every time
                 yield xx
         else:
@@ -250,7 +252,7 @@ def ask(predicate, infolist, bounds, cut_count):
                     if t:
                         xx = ask_list(line.B, new_bounds, cut_count_local)
                         for x0 in xx:
-                            if cut_count_local[0]>1:
+                            if cut_count_local[0] > 1:
                                 break
                             yield x0
                     yield False, bounds
@@ -259,10 +261,10 @@ def ask(predicate, infolist, bounds, cut_count):
                     if t:
                         yield True, new_bounds
                     yield False, bounds
-                if cut_count_local[0]>1:
+                if cut_count_local[0] > 1:
                     break
                 yield False, bounds
-                
+
 def ask_print(predicate, infolist, bounds):
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
