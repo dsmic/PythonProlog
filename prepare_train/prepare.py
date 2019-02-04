@@ -78,6 +78,36 @@ for i in range(1, depth_num + 1):
     print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
 print('total lines', len(expression_database))
 
+
+
+def remove_first(sss):
+    counter = 0
+    pos = 1
+    pp = 1
+    for cc in sss[1:]:
+        if cc == '[':
+            counter += 1
+        elif cc == ']':
+            counter -= 1
+        elif cc == ',' and counter == 0:
+            pos = pp
+            break
+        pp += 1
+    rest = sss[pos+1:-1]
+    counter = 0
+    pos = 1
+    pp = 1
+    for cc in rest:
+        if cc == '[':
+            counter += 1
+        elif cc == ']':
+            counter -= 1
+        elif cc == ',' and counter == 0:
+            pos = pp
+            break
+        pp += 1
+    return rest[:pos-1]
+
 train_data = []
 max_length = 0
 max_output = 0
@@ -94,12 +124,16 @@ for key in expression_database:
                 print("chars missing", elements[0], elements[1], elements[2])
             else:
                 output = int(elements[1]) - 1 #logging counts from 1, we need 0
-                data = elements[0]+" "+elements[2]
-                train_data.append((output, data))
-                if len(data) > max_length:
-                    max_length = len(data)
-                if output > max_output:
-                    max_output = output
+                if elements[0] == 'eqn1':
+                    print(elements[2])
+                    el2 = remove_first(elements[2])
+                    data = elements[0]+ " " + el2
+                    print(data)
+                    train_data.append((output, data))
+                    if len(data) > max_length:
+                        max_length = len(data)
+                    if output > max_output:
+                        max_output = output
 
 shuffle(train_data)
 len_full_data = len(train_data)

@@ -16,6 +16,8 @@ from builtins import input
 from past.builtins import basestring    # pip install future
 # pylint: enable=W0622
 
+import sys
+
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
@@ -147,10 +149,14 @@ def match(A, B, bounds):
     if isinstance(final_A, var): # not bound
         if not check_if_var_in_object(final_A, final_B, bounds):
             new_bounds[final_A] = final_B
+        else:
+            return False, bounds
     else:
         if isinstance(final_B, var):
             if not check_if_var_in_object(final_B, final_A, bounds):
                 new_bounds[final_B] = final_A
+            else:
+                return False, bounds
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
@@ -321,15 +327,21 @@ def ask(predicate, infolist, bounds, cut_count):
                         yield False, bounds
                 yield False, bounds
 
-def ask_print(predicate, infolist, bounds):
+def ask_print(predicate, infolist, bounds, wait_for_enter):
     if track_for_ai:
         track_for_ai[0] = []
     xx = ask(predicate, infolist, bounds, [0])
     for t, new_bounds in xx:
         if t:
-            print(formatl(infolist, new_bounds, {}))
             if track_for_ai:
                 print("track_for_ai", track_for_ai[0])
+            print(formatl(infolist, new_bounds, {}))
+            if wait_for_enter:
+                cc = input('. (stop) a (all):')
+                if cc == 'a':
+                    wait_for_enter = False
+                if cc == '.':
+                    break
 
 # pylint: disable=C0413
 # modified from PyLog
@@ -412,7 +424,9 @@ def create_l(inlist, local_vars):
         o = get_new_var(o, local_vars)
     return l(o, create_l(inlist[1:], local_vars))
 
-def imp(iii):
+def imp(iii, wait_for_enter = False):
+    if iii.strip() == '':
+        return True, None
     local_vars = {}
     ii = parse_imp(iii)
     if ii['result'] == 'fact':
@@ -422,7 +436,7 @@ def imp(iii):
     elif ii['result'] == 'query':
         query = ii['stmt']
         predicate = query[0]
-        ask_print(predicate, create_l(query[1].asList(), local_vars), {})
+        ask_print(predicate, create_l(query[1].asList(), local_vars), {}, wait_for_enter)
     elif ii['result'] == 'rule':
         rrr = ii['rule']
         predicate = rrr[0][0]
@@ -454,7 +468,7 @@ def prolog():
     while 1:
         command = input("PyProlog==> ")
         try:
-            t, f = imp(command)
+            t, f = imp(command, True)
             if not t:
                 break
             if f is not None:
@@ -490,7 +504,7 @@ except FileNotFoundError:
 
 # execute a test before
 init_data()
-load_file('test.pl')
+load_file('deb.pl')
 #print_assertz_data()
 
 # start prolog promt
