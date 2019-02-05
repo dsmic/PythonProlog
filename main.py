@@ -7,7 +7,7 @@ Created on Sat Jan 19 15:41:50 2019
 licence: gplv3, see licence.txt file
 
 """
-# pylint: disable=C0103, C0301, C0111, R0903, C1801
+# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801
 
 # pylint: disable=W0622
 # for usage with python2 and python3
@@ -137,6 +137,7 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
 
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
+    # pylint: disable=R0911
     if A is None and B is None:
         return True, bounds
     if not (A != None and B != None):
@@ -342,7 +343,7 @@ def ask_print(predicate, infolist, bounds, wait_for_enter):
                 if cc == '.':
                     break
 
-# pylint: disable=C0413
+# pylint: disable=C0413, C0411
 # modified from PyLog
 from pyparsing import (Group, Keyword, NoMatch, Suppress, Word, ZeroOrMore, Forward, nestedExpr,
                        ParseException, alphas)
@@ -496,10 +497,10 @@ def print_assertz_data():
                     print(predicate, formatl(fact_or_rule, {}, {}))
 
 try:
-# pylint: disable=W0122
+# pylint: disable=W0122, W0703
     exec(open('config.py').read())
-except FileNotFoundError:
-    print("no config.py file loaded")
+except Exception as ee:
+    print("no config.py file loaded", ee)
 
 # execute a test before
 init_data()
