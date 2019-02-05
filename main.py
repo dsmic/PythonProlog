@@ -503,7 +503,7 @@ except FileNotFoundError:
 
 # execute a test before
 init_data()
-load_file('deb.pl')
+load_file('prooftest.pl')
 #print_assertz_data()
 
 # start prolog promt
