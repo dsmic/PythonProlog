@@ -19,6 +19,8 @@ from past.builtins import basestring    # pip install future
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
+only_one_answer = False
+
 #creats vars
 class var(object): # prolog variable
     def __init__(self, name=None):
@@ -342,6 +344,8 @@ def ask_print(predicate, infolist, bounds, wait_for_enter):
                     wait_for_enter = False
                 if cc == '.':
                     break
+            elif only_one_answer:
+                break # only one result
 
 # pylint: disable=C0413, C0411
 # modified from PyLog
