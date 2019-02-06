@@ -58,6 +58,18 @@ class calc(object):
                 if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
                     return True, str(1)
                 return False, str(0)
+            if op == 'lowereq':
+                if int(final_bound(op1, bounds)) <= int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
+            if op == 'neq':
+                if int(final_bound(op1, bounds)) != int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
+            if op == 'eq':
+                if int(final_bound(op1, bounds)) == int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -129,6 +141,7 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
 
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
+    # pylint: disable=R0911
     if A is None and B is None:
         return True, bounds
     if not (A != None and B != None):
