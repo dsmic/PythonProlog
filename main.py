@@ -43,7 +43,7 @@ class cut(object):
 
 #marks calc for is
 class calc(object):
-    # pylint: disable=R0911
+    # pylint: disable=R0911, R0912
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
         calc_object = final_bound(calc_object, bounds)
@@ -54,6 +54,10 @@ class calc(object):
             op = calc_object.A
             op1 = calc_object.B.A
             op2 = calc_object.B.B.A
+            if op == 'lower':
+                if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -68,6 +72,7 @@ class calc(object):
                         return True, str(int(op1)/int(op2))
                     elif op == 'mod':
                         return True, str(int(op1) % int(op2))
+
             return False, calc_object
 
     def do_calc(self, term, bounds):
