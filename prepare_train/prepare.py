@@ -12,8 +12,6 @@ Created on Fri Feb  1 15:50:23 2019
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-import os
-
 from random import shuffle
 
 import numpy as np

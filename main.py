@@ -508,7 +508,7 @@ except Exception as ee:
 
 # execute a test before
 init_data()
-load_file('prooftest.pl')
+load_file('test.pl')
 #print_assertz_data()
 
 # start prolog promt
