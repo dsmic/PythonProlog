@@ -68,6 +68,18 @@ class calc(object):
                 if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
                     return True, str(1)
                 return False, str(0)
+            if op == 'lowereq':
+                if int(final_bound(op1, bounds)) <= int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
+            if op == 'neq':
+                if int(final_bound(op1, bounds)) != int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
+            if op == 'eq':
+                if int(final_bound(op1, bounds)) == int(final_bound(op2, bounds)):
+                    return True, str(1)
+                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
