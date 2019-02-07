@@ -143,7 +143,7 @@ def renew_vars(line, local_vars):
     elif isinstance(line, basestring):
         return line
     elif isinstance(line,empty):
-        return None
+        return empty_list
     raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
@@ -160,13 +160,15 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     # pylint: disable=R0911
-    if A is None and B is None:
+    if A is empty_list and B is empty_list:
         return True, bounds
-    if not (A != None and B != None):
+    if not (A != empty_list and B != empty_list):
         return False, bounds # one is None, one not, this is no match used for  different length of lists
     new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
+    #vvv={}
+    #print(formatl(final_A, bounds, vvv),formatl(final_B, bounds, vvv))
     if final_A == final_B:
         return True, bounds
     if isinstance(final_A, var): # not bound
@@ -196,6 +198,7 @@ def match(A, B, bounds):
 assertz_data = {}
 
 def assertz(predicate, infolist):
+    #print("assert",formatl(infolist, [], {}))
     if predicate in assertz_data:
         assertz_data[predicate].append(infolist)
     else:
@@ -315,6 +318,7 @@ def ask(predicate, infolist, bounds, cut_count):
                 line = renew_vars(lll, {})
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
+                    #print(t)
                     if t:
                         xx = ask_list(line.B, new_bounds, cut_count_local)
                         if track_for_ai:
@@ -339,6 +343,7 @@ def ask(predicate, infolist, bounds, cut_count):
                     yield False, bounds
                 else: #fact
                     t, new_bounds = match(infolist, line, bounds)
+                    #print(t)
                     if t:
                         if track_for_ai:
                             if local_count > 1:
@@ -431,15 +436,16 @@ def parse_imp(iii):
     return result
 
 def create_list(inlist, local_vars):
+    #print("cl1",inlist)
     if len(inlist) == 0:
         return empty_list
     o = inlist[0]
     if o == '|':
         #restlist
         rest_variable = inlist[1]
-        if rest_variable.isupper():
+        if rest_variable[0].isupper():
             return get_new_var(rest_variable, local_vars)
-        print("list rest must be a variable")
+        print("list rest must be a variable:", rest_variable)
         return None
     if isinstance(o, list):
         return l(create_list(o, local_vars), create_list(inlist[1:], local_vars))
@@ -448,8 +454,9 @@ def create_list(inlist, local_vars):
     return l(o, create_list(inlist[1:], local_vars))
 
 def create_l(inlist, local_vars):
+    #print("cl2",inlist)
     if inlist == []:
-        return None
+        return empty_list
     o = inlist[0]
     if isinstance(o, list):
         o = create_list(o, local_vars)
@@ -537,7 +544,7 @@ except Exception as ee:
 
 # execute a test before
 init_data()
-load_file('test.pl')
+load_file('deb.pl')
 
 #todo !!!!
 #print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
