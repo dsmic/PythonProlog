@@ -132,7 +132,7 @@ def renew_vars(line, local_vars):
         return None
     elif isinstance(line, basestring):
         return line
-    elif isinstance(line,empty):
+    elif isinstance(line, empty):
         return None
     raise Exception("clause with illegal structure " + str(line))
 
@@ -369,7 +369,7 @@ def create_list(inlist, local_vars):
         #restlist
         rest_variable = inlist[1]
         if rest_variable.isupper():
-            return get_new_var(rest_variable,local_vars)
+            return get_new_var(rest_variable, local_vars)
         print("list rest must be a variable")
         return None
     if isinstance(o, list):
