@@ -368,9 +368,9 @@ def create_list(inlist, local_vars):
     if o == '|':
         #restlist
         rest_variable = inlist[1]
-        if rest_variable.isupper():
+        if rest_variable[0].isupper():
             return get_new_var(rest_variable, local_vars)
-        print("list rest must be a variable")
+        print("list rest must be a variable:", rest_variable)
         return None
     if isinstance(o, list):
         return l(create_list(o, local_vars), create_list(inlist[1:], local_vars))
