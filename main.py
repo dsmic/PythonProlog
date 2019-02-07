@@ -422,7 +422,7 @@ def parse_imp(iii):
 
 def create_list(inlist, local_vars):
     if len(inlist) == 0:
-        return None
+        return 'empty'
     o = inlist[0]
     if isinstance(o, list):
         return l(create_list(o, local_vars), create_list(inlist[1:], local_vars))
@@ -520,7 +520,7 @@ except Exception as ee:
 
 # execute a test before
 init_data()
-load_file('test.pl')
+load_file('deb.pl')
 #print_assertz_data()
 
 # start prolog promt
