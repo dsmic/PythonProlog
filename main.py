@@ -387,7 +387,7 @@ def parse_imp(iii):
 
 # pylint: disable=W0106
 # dont know why pylint warning, line is from example code
-    pOBJECT << (pNAME | Suppress(',') | nestedBrackets)
+    pOBJECT << (pNAME | (Suppress(',') | '|') | nestedBrackets)
     pOBJECT.setParseAction(lambda result: result)
 # pylint: enable=W0106
 
@@ -422,8 +422,15 @@ def parse_imp(iii):
 
 def create_list(inlist, local_vars):
     if len(inlist) == 0:
-        return 'empty'
+        return None
     o = inlist[0]
+    if o == '|':
+        #restlist
+        rest_variable = inlist[1]
+        if rest_variable.isupper():
+            return get_new_var(rest_variable,local_vars)
+        print("list rest must be a variable")
+        return None
     if isinstance(o, list):
         return l(create_list(o, local_vars), create_list(inlist[1:], local_vars))
     if isinstance(o, basestring) and o[0].isupper():
@@ -480,7 +487,7 @@ def load_file(f):
 def prolog():
     print("\n#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)")
     print("atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]")
-    print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,empty))")
+    print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,None))")
     while 1:
         command = input("PyProlog==> ")
         try:
