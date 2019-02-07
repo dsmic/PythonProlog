@@ -428,7 +428,7 @@ def create_list(inlist, local_vars):
         #restlist
         rest_variable = inlist[1]
         if rest_variable.isupper():
-            return get_new_var(rest_variable,local_vars)
+            return get_new_var(rest_variable, local_vars)
         print("list rest must be a variable")
         return None
     if isinstance(o, list):
@@ -529,8 +529,8 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-#todo !!!! 
-print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
+#todo !!!!
+#print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
 #print_assertz_data()
 
 # start prolog promt
