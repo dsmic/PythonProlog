@@ -520,7 +520,10 @@ except Exception as ee:
 
 # execute a test before
 init_data()
-load_file('deb.pl')
+load_file('test.pl')
+
+#todo !!!! 
+print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
 #print_assertz_data()
 
 # start prolog promt
