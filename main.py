@@ -37,6 +37,12 @@ class rule(object):
         self.A = A
         self.B = B
 
+#marks empty list
+class empty(object):
+    pass
+
+empty_list = empty()
+
 #marks cut predicate
 class cut(object):
     pass
@@ -126,6 +132,8 @@ def renew_vars(line, local_vars):
         return None
     elif isinstance(line, basestring):
         return line
+    elif isinstance(line,empty):
+        return None
     raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
@@ -195,6 +203,8 @@ def formatl(X_orig, bounds, var_nums):
     ret = ""
     komma = ""
     closeb = ""
+    if isinstance(X, empty):
+        return "[]"
     if isinstance(X, l):
         ret = "["
         closeb = "]"
@@ -220,7 +230,7 @@ def formatl(X_orig, bounds, var_nums):
             v_num = len(var_nums)
             var_nums[X] = v_num
         ret += komma+"_"+str(v_num)
-    elif X != None:
+    elif X != None and X != empty_list:
         ret += komma+str(X)
     return ret+closeb
 
@@ -353,7 +363,7 @@ def parse_imp(iii):
 
 def create_list(inlist, local_vars):
     if len(inlist) == 0:
-        return None
+        return empty_list
     o = inlist[0]
     if o == '|':
         #restlist
