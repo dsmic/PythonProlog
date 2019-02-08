@@ -90,7 +90,7 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-                    
+
 
             return False, calc_object
 
@@ -119,21 +119,19 @@ def get_new_var(name, local_vars):
 # all vars get new instances
 def renew_vars(line, local_vars):
     # pylint: disable=R0911
-    if isinstance(line, var):
-        return get_new_var(line, local_vars)
-    elif isinstance(line, l):
+    if isinstance(line, l):
         return l(renew_vars(line.A, local_vars), renew_vars(line.B, local_vars))
+    elif isinstance(line, var):
+        return get_new_var(line, local_vars)
     elif isinstance(line, rule):
         return rule(renew_vars(line.A, local_vars), renew_vars(line.B, local_vars))
     elif isinstance(line, list):
         if len(line) == 0:
             return []
         return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
-    elif line is None:
-        return None
     elif isinstance(line, basestring):
         return line
-    elif isinstance(line,empty):
+    elif isinstance(line, empty):
         return empty_list
     raise Exception("clause with illegal structure " + str(line))
 
@@ -152,14 +150,9 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     # pylint: disable=R0911
-#    if A is empty_list and B is empty_list:
-#        return True, bounds
-#    if not (A != empty_list and B != empty_list):
-#        return False, bounds # one is None, one not, this is no match used for  different length of lists
     new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
-    #print(formatl(final_A, bounds, vvv),formatl(final_B, bounds, vvv))
     if final_A == final_B:
         return True, bounds
     if isinstance(final_A, var): # not bound
@@ -179,11 +172,9 @@ def match(A, B, bounds):
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
                 if t1:
-                    #print(formatl(final_A, b2, vvv),formatl(final_B, b2, vvv))
                     b2.update(bounds)
                     t2, b3 = match(final_A.B, final_B.B, b2)
                     if t2:
-                        #print(formatl(final_A, b3, vvv),formatl(final_B, b3, vvv))
                         return True, b3
             return False, bounds
 
@@ -191,7 +182,6 @@ def match(A, B, bounds):
 assertz_data = {}
 
 def assertz(predicate, infolist):
-    #print("assert",formatl(infolist, [], {}))
     if predicate in assertz_data:
         assertz_data[predicate].append(infolist)
     else:
@@ -265,7 +255,6 @@ def ask(predicate, infolist, bounds, cut_count):
     else:
         contains = assertz_data[predicate]
         if isinstance(contains, calc): #is predicate
-            #print "iiiii", infolist
             t, new_bounds = contains.do_calc(infolist, bounds)
             if t:
                 yield t, new_bounds
@@ -281,7 +270,6 @@ def ask(predicate, infolist, bounds, cut_count):
                 line = renew_vars(lll, {})
                 if isinstance(line, rule):
                     t, new_bounds = match(infolist, line.A, bounds)
-                    #print(t)
                     if t:
                         xx = ask_list(line.B, new_bounds, cut_count_local)
                         for x0 in xx:
@@ -291,7 +279,6 @@ def ask(predicate, infolist, bounds, cut_count):
                     yield False, bounds
                 else:
                     t, new_bounds = match(infolist, line, bounds)
-                    #print(t)
                     if t:
                         yield True, new_bounds
                     yield False, bounds
@@ -367,7 +354,6 @@ def parse_imp(iii):
     return result
 
 def create_list(inlist, local_vars):
-    #print("cl1",inlist)
     if len(inlist) == 0:
         return empty_list
     o = inlist[0]
@@ -385,7 +371,6 @@ def create_list(inlist, local_vars):
     return l(o, create_list(inlist[1:], local_vars))
 
 def create_l(inlist, local_vars):
-    #print("cl2",inlist)
     if inlist == []:
         return empty_list
     o = inlist[0]
