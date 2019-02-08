@@ -70,22 +70,6 @@ class calc(object):
                     F.write(formatl(op2, bounds, {})+"\n")
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
-            if op == 'lower':
-                if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
-                    return True, str(1)
-                return False, str(0)
-            if op == 'lowereq':
-                if int(final_bound(op1, bounds)) <= int(final_bound(op2, bounds)):
-                    return True, str(1)
-                return False, str(0)
-            if op == 'neq':
-                if int(final_bound(op1, bounds)) != int(final_bound(op2, bounds)):
-                    return True, str(1)
-                return False, str(0)
-            if op == 'eq':
-                if int(final_bound(op1, bounds)) == int(final_bound(op2, bounds)):
-                    return True, str(1)
-                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -100,6 +84,23 @@ class calc(object):
                         return True, str(int(op1)/int(op2))
                     elif op == 'mod':
                         return True, str(int(op1) % int(op2))
+                    elif op == 'lower':
+                        if int(op1) < int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'lowereq':
+                        if int(op1) <= int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'neq':
+                        if int(op1) != int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'eq':
+                        if int(op1) == int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    
 
             return False, calc_object
 
@@ -270,8 +271,8 @@ limit_recursion_with_track_for_ai_length = [9999999]
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
-
-    if limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
+    #print(predicate, formatl(infolist,bounds,{}))
+    if track_for_ai and limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
         yield False, bounds
 
     elif cut_count[0] > 1:
