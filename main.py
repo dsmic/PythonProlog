@@ -148,42 +148,41 @@ def renew_vars(line, local_vars):
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
     final_other = final_bound(final_other_in, bounds)
+    if final_var == final_other:
+        return True
     if isinstance(final_other, l):
         if check_if_var_in_object(final_var, final_other.A, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    elif final_var == final_other:
-        return True
+    
     return False
 
 #vvv={}
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     # pylint: disable=R0911
-    new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
     if final_A == final_B:
         return True, bounds
     if isinstance(final_A, var): # not bound
         if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
+            new_bounds = bounds.copy()
             new_bounds[final_A] = final_B
-            new_bounds.update(bounds)
             return True, new_bounds
         return False, bounds
     else:
         if isinstance(final_B, var):
-            if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
+            if not check_if_var_in_object(final_B, final_A, bounds): # isinstance(final_A, var) not possible is gurantied
+                new_bounds = bounds.copy()
                 new_bounds[final_B] = final_A
-                new_bounds.update(bounds)
                 return True, new_bounds
             return False, bounds
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
                 if t1:
-                    b2.update(bounds)
                     t2, b3 = match(final_A.B, final_B.B, b2)
                     if t2:
                         return True, b3
