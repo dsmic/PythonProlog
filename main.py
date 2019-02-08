@@ -147,17 +147,17 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
         return True
     return False
 
+#vvv={}
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     # pylint: disable=R0911
-    if A is empty_list and B is empty_list:
-        return True, bounds
-    if not (A != empty_list and B != empty_list):
-        return False, bounds # one is None, one not, this is no match used for  different length of lists
+#    if A is empty_list and B is empty_list:
+#        return True, bounds
+#    if not (A != empty_list and B != empty_list):
+#        return False, bounds # one is None, one not, this is no match used for  different length of lists
     new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
-    #vvv={}
     #print(formatl(final_A, bounds, vvv),formatl(final_B, bounds, vvv))
     if final_A == final_B:
         return True, bounds
@@ -178,9 +178,11 @@ def match(A, B, bounds):
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
                 if t1:
+                    #print(formatl(final_A, b2, vvv),formatl(final_B, b2, vvv))
                     b2.update(bounds)
                     t2, b3 = match(final_A.B, final_B.B, b2)
                     if t2:
+                        #print(formatl(final_A, b3, vvv),formatl(final_B, b3, vvv))
                         return True, b3
             return False, bounds
 
@@ -212,11 +214,8 @@ def formatl(X_orig, bounds, var_nums):
         ret = "["
         closeb = "]"
     while isinstance(X, l):
-        if isinstance(X.A, l):
-            ret += komma + formatl(X.A, bounds, var_nums)
-        else:
-            ret += komma + formatl(X.A, bounds, var_nums)
-        X = X.B
+        ret += komma + formatl(X.A, bounds, var_nums)
+        X = final_bound(X.B, bounds)
         komma = ","
     if isinstance(X, list):
         ret += "["
