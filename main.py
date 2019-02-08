@@ -23,8 +23,9 @@ only_one_answer = False
 
 #creats vars
 class var(object): # prolog variable
-    def __init__(self, name=None):
-        self.name = name
+    pass
+#    def __init__(self, name=None):
+#        self.name = name
 
 #marks lists
 class l(object):
@@ -123,7 +124,7 @@ def final_bound(A, bounds):
 
 def get_new_var(name, local_vars):
     if name not in local_vars:
-        local_vars[name] = var(name)
+        local_vars[name] = var()
     return local_vars[name]
 
 # all vars get new instances
