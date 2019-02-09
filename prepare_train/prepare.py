@@ -146,7 +146,8 @@ print("len of valid data", len(valid_data))
 print("max len of data", max_length, "max output", max_output)
 
 def str_to_int_list(x, ml):
-    x = ('{:>'+str(ml)+'30}').format(x)
+    # uncomment for all the same length
+    # x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
         ret.append(vocab[cc])
