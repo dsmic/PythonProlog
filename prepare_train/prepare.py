@@ -15,13 +15,14 @@ Created on Fri Feb  1 15:50:23 2019
 import os
 
 from random import shuffle
+from random import random
 
 import numpy as np
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.layers import Activation, Embedding
 from keras.layers import LSTM, CuDNNLSTM
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
 
 LSTM_use = CuDNNLSTM
@@ -70,11 +71,12 @@ for i in range(1, depth_num + 1):
     f1 = open('tttt'+str(i)+'.tmp')
     f2 = open('tttx'+str(i)+'.tmp')
     for line in f1:
-        expression = f2.readline().strip()
-        count_lines += 1
-        if expression not in expression_database:
-            count_new_lines += 1
-            expression_database[expression] = line.strip()
+        if i < 4 or random()>0.95:
+          expression = f2.readline().strip()
+          count_lines += 1
+          if expression not in expression_database:
+              count_new_lines += 1
+              expression_database[expression] = line.strip()
     print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
 print('total lines', len(expression_database))
 
@@ -148,7 +150,8 @@ print("len of valid data", len(valid_data))
 print("max len of data", max_length, "max output", max_output)
 
 def str_to_int_list(x, ml):
-    x = ('{:>'+str(ml)+'30}').format(x)
+    #to make all length the same uncomment
+    #x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
         ret.append(vocab[cc])
@@ -183,7 +186,7 @@ valid_data_generator = KerasBatchGenerator(valid_data, vocab)
 #    print(next(train_data_generator.generate()))
 
 
-hidden_size = 200
+hidden_size = 2000
 
 model = Sequential()
 model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
@@ -192,7 +195,10 @@ model.add(LSTM_use(hidden_size, return_sequences=True))
 model.add(LSTM_use(max_output + 1, return_sequences=False))
 model.add(Activation('softmax'))
 
-optimizer = Adam(lr=0.00001)
+#optimizer = Nadam()
+optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=1e-5)
+#optimizer = SGD(lr=0.01, momentum=0.99, decay=0.5, nesterov=False) 
+#optimizer = Adam(lr=0.000001)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
 
 print(model.summary())
@@ -201,4 +207,4 @@ checkpointer = ModelCheckpoint(filepath='checkpoints/model-{epoch:02d}.hdf5', ve
 
 num_epochs = 200
 
-model.fit_generator(train_data_generator.generate(), len(train_data), num_epochs, validation_data=valid_data_generator.generate(), validation_steps=len(valid_data), callbacks=[checkpointer])
+model.fit_generator(train_data_generator.generate(), 10000, num_epochs, validation_data=valid_data_generator.generate(), validation_steps=1000, callbacks=[checkpointer])
