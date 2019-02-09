@@ -19,6 +19,7 @@ from past.builtins import basestring    # pip install future
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
+
 only_one_answer = False
 
 #creats vars
@@ -43,7 +44,8 @@ class rule(object):
 class empty(object):
     pass
 
-empty_list = empty()
+#import copy
+empty_list = empty #this is a reference to the class, this way deepcopy would work too
 
 #marks cut predicate
 class cut(object):
@@ -129,6 +131,7 @@ def get_new_var(name, local_vars):
 
 # all vars get new instances
 def renew_vars(line, local_vars):
+    #return copy.deepcopy(line) # the original impementaion was faster, this is shorter :)
     # pylint: disable=R0911
     if isinstance(line, l):
         return l(renew_vars(line.A, local_vars), renew_vars(line.B, local_vars))
@@ -140,11 +143,12 @@ def renew_vars(line, local_vars):
         if len(line) == 0:
             return []
         return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
-    elif isinstance(line, basestring):
-        return line
-    elif isinstance(line, empty):
-        return empty_list
-    raise Exception("clause with illegal structure " + str(line))
+    return line
+#    elif isinstance(line, basestring):
+#        return line
+#    elif line == empty_list: #isinstance(line, empty):
+#        return empty_list
+#    raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
     final_other = final_bound(final_other_in, bounds)
