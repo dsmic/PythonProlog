@@ -21,11 +21,12 @@ import numpy as np
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.layers import Activation, Embedding
-from keras.layers import LSTM, CuDNNLSTM
+from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
 
-LSTM_use = CuDNNLSTM
+#LSTM_use = CuDNNLSTM
+LSTM_use = CuDNNGRU
 
 # uncomment the following to disable CuDNN support
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -61,7 +62,8 @@ def check_all_chars_in(x):
 
 print(vocab)
 
-depth_num = 3
+output_stats = {}
+depth_num = 4
 expression_database = {}
 
 for i in range(1, depth_num + 1):
@@ -71,7 +73,7 @@ for i in range(1, depth_num + 1):
     f1 = open('tttt'+str(i)+'.tmp')
     f2 = open('tttx'+str(i)+'.tmp')
     for line in f1:
-        if i < 4 or random()>0.95:
+        if i < 5 or random()>0.95:
           expression = f2.readline().strip()
           count_lines += 1
           if expression not in expression_database:
@@ -127,10 +129,14 @@ for key in expression_database:
             else:
                 output = int(elements[1]) - 1 #logging counts from 1, we need 0
                 if elements[0] == 'eqn1':
-                    print(elements[2])
+                    #print(elements[2])
                     el2 = remove_first(elements[2])
                     data = elements[0]+ " " + el2
-                    print(data)
+                    #print(output, data)
+                    if output in output_stats:
+                        output_stats[output] += 1
+                    else:
+                        output_stats[output]=1
                     train_data.append((output, data))
                     if len(data) > max_length:
                         max_length = len(data)
@@ -148,6 +154,7 @@ print("len of train data", len(train_data))
 print("len of valid data", len(valid_data))
 
 print("max len of data", max_length, "max output", max_output)
+print(output_stats)
 
 def str_to_int_list(x, ml):
     #to make all length the same uncomment
@@ -186,19 +193,25 @@ valid_data_generator = KerasBatchGenerator(valid_data, vocab)
 #    print(next(train_data_generator.generate()))
 
 
-hidden_size = 2000
+hidden_size = 200
 
-model = Sequential()
-model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
-#model.add(Masking())
-model.add(LSTM_use(hidden_size, return_sequences=True))
-model.add(LSTM_use(max_output + 1, return_sequences=False))
-model.add(Activation('softmax'))
+try:
+  from keras.models import load_model
+  model = load_model('partly_trained.hdf5')
+  print("loaded model")
+except Exception as ee:
+  print("new model started as loading results in:",ee)
+  model = Sequential()
+  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
+  #model.add(Masking())
+  model.add(LSTM_use(hidden_size, return_sequences=True))
+  model.add(LSTM_use(max_output + 1, return_sequences=False))
+  model.add(Activation('softmax'))
 
 #optimizer = Nadam()
-optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=1e-5)
+optimizer = RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0)
 #optimizer = SGD(lr=0.01, momentum=0.99, decay=0.5, nesterov=False) 
-#optimizer = Adam(lr=0.000001)
+#optimizer = Adam(lr=0.001)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
 
 print(model.summary())
@@ -207,4 +220,4 @@ checkpointer = ModelCheckpoint(filepath='checkpoints/model-{epoch:02d}.hdf5', ve
 
 num_epochs = 200
 
-model.fit_generator(train_data_generator.generate(), 10000, num_epochs, validation_data=valid_data_generator.generate(), validation_steps=1000, callbacks=[checkpointer])
+model.fit_generator(train_data_generator.generate(), 100000, num_epochs, validation_data=valid_data_generator.generate(), validation_steps=10000, callbacks=[checkpointer])
