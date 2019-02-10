@@ -22,7 +22,7 @@ from keras.layers import Activation, Embedding
 from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
-
+import keras.backend
 #LSTM_use = CuDNNLSTM
 LSTM_use = CuDNNGRU
 
@@ -30,6 +30,49 @@ LSTM_use = CuDNNGRU
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #LSTM_use = LSTM
 ###########################################
+
+
+
+import argparse
+
+parser = argparse.ArgumentParser(description='train recurrent net.')
+parser.add_argument('--lr', dest='lr',  type=float, default=1e-3)
+parser.add_argument('--epochs', dest='epochs',  type=int, default=50)
+parser.add_argument('--hidden_size', dest='hidden_size',  type=int, default=50)
+parser.add_argument('--final_name', dest='final_name',  type=str, default='final_model')
+parser.add_argument('--pretrained_name', dest='pretrained_name',  type=str, default=None)
+
+args = parser.parse_args()
+
+
+###################################################################
+# Network
+hidden_size = args.hidden_size
+
+if args.pretrained_name is not None:
+  from keras.models import load_model
+  model = load_model(args.pretrained_name)
+  print("loaded model")
+else:
+  model = Sequential()
+  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
+  #model.add(Masking())
+  model.add(LSTM_use(hidden_size, return_sequences=True))
+  model.add(LSTM_use(max_output + 1, return_sequences=False))
+  model.add(Activation('softmax'))
+
+import inspect
+with open(__file__) as f:
+    a = f.readlines()
+startline = inspect.currentframe().f_lineno
+print(a[startline+1:startline+2])
+optimizer = RMSprop(lr=args.lr, rho=0.9, epsilon=None, decay=0)
+
+print("learning rate",keras.backend.eval(optimizer.lr))
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
+
+print(model.summary())
+
 
 vocab = {}
 count_chars = 0
@@ -187,35 +230,13 @@ class KerasBatchGenerator(object):
 train_data_generator = KerasBatchGenerator(train_data, vocab)
 valid_data_generator = KerasBatchGenerator(valid_data, vocab)
 
-#for i in range(2*len(train_data)):
-#    print(next(train_data_generator.generate()))
 
-
-hidden_size = 200
-
-try:
-  from keras.models import load_model
-  model = load_model('partly_trained.hdf5')
-  print("loaded model")
-except Exception as ee:
-  print("new model started as loading results in:",ee)
-  model = Sequential()
-  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
-  #model.add(Masking())
-  model.add(LSTM_use(hidden_size, return_sequences=True))
-  model.add(LSTM_use(max_output + 1, return_sequences=False))
-  model.add(Activation('softmax'))
-
-#optimizer = Nadam()
-optimizer = RMSprop(lr=0.00001, rho=0.9, epsilon=None, decay=0)
-#optimizer = SGD(lr=0.01, momentum=0.99, decay=0.5, nesterov=False) 
-#optimizer = Adam(lr=0.001)
-model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
-
-print(model.summary())
 print("starting")
 checkpointer = ModelCheckpoint(filepath='checkpoints/model-{epoch:02d}.hdf5', verbose=1)
 
-num_epochs = 200
+num_epochs = args.epochs
 
-model.fit_generator(train_data_generator.generate(), 100000, num_epochs, validation_data=valid_data_generator.generate(), validation_steps=10000, callbacks=[checkpointer])
+history = model.fit_generator(train_data_generator.generate(), 100000, num_epochs, validation_data=valid_data_generator.generate(), validation_steps=10000, callbacks=[checkpointer])
+
+model.save(args.final_name+'.hdf5')
+print(history.history.keys())
