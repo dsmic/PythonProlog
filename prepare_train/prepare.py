@@ -12,8 +12,6 @@ Created on Fri Feb  1 15:50:23 2019
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-import os
-
 from random import shuffle
 from random import random
 
@@ -157,8 +155,8 @@ print("max len of data", max_length, "max output", max_output)
 print(output_stats)
 
 def str_to_int_list(x, ml):
-    #to make all length the same uncomment
-    #x = ('{:>'+str(ml)+'}').format(x)
+    # uncomment for all the same length
+    # x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
         ret.append(vocab[cc])

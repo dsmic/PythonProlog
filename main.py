@@ -19,12 +19,14 @@ from past.builtins import basestring    # pip install future
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
+
 only_one_answer = False
 
 #creats vars
 class var(object): # prolog variable
-    def __init__(self, name=None):
-        self.name = name
+    pass
+#    def __init__(self, name=None):
+#        self.name = name
 
 #marks lists
 class l(object):
@@ -37,6 +39,13 @@ class rule(object):
     def __init__(self, A, B):
         self.A = A
         self.B = B
+
+#marks empty list
+class empty(object):
+    pass
+
+#import copy
+empty_list = empty #this is a reference to the class, this way deepcopy would work too
 
 #marks cut predicate
 class cut(object):
@@ -64,10 +73,6 @@ class calc(object):
                     F.write(formatl(op2, bounds, {})+"\n")
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
-            if op == 'lower':
-                if int(final_bound(op1, bounds)) < int(final_bound(op2, bounds)):
-                    return True, str(1)
-                return False, str(0)
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -82,6 +87,23 @@ class calc(object):
                         return True, str(int(op1)/int(op2))
                     elif op == 'mod':
                         return True, str(int(op1) % int(op2))
+                    elif op == 'lower':
+                        if int(op1) < int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'lowereq':
+                        if int(op1) <= int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'neq':
+                        if int(op1) != int(op2):
+                            return True, str(1)
+                        return False, str(0)
+                    elif op == 'eq':
+                        if int(op1) == int(op2):
+                            return True, str(1)
+                        return False, str(0)
+
 
             return False, calc_object
 
@@ -104,69 +126,67 @@ def final_bound(A, bounds):
 
 def get_new_var(name, local_vars):
     if name not in local_vars:
-        local_vars[name] = var(name)
+        local_vars[name] = var()
     return local_vars[name]
 
 # all vars get new instances
 def renew_vars(line, local_vars):
+    #return copy.deepcopy(line) # the original impementaion was faster, this is shorter :)
     # pylint: disable=R0911
-    if isinstance(line, var):
-        return get_new_var(line, local_vars)
-    elif isinstance(line, l):
+    if isinstance(line, l):
         return l(renew_vars(line.A, local_vars), renew_vars(line.B, local_vars))
+    elif isinstance(line, var):
+        return get_new_var(line, local_vars)
     elif isinstance(line, rule):
         return rule(renew_vars(line.A, local_vars), renew_vars(line.B, local_vars))
     elif isinstance(line, list):
         if len(line) == 0:
             return []
         return [renew_vars(line[0], local_vars)] + renew_vars(line[1:], local_vars)
-    elif line is None:
-        return None
-    elif isinstance(line, basestring):
-        return line
-    raise Exception("clause with illegal structure " + str(line))
+    return line
+#    elif isinstance(line, basestring):
+#        return line
+#    elif line == empty_list: #isinstance(line, empty):
+#        return empty_list
+#    raise Exception("clause with illegal structure " + str(line))
 
 def check_if_var_in_object(final_var, final_other_in, bounds):
     final_other = final_bound(final_other_in, bounds)
+    if final_var == final_other:
+        return True
     if isinstance(final_other, l):
         if check_if_var_in_object(final_var, final_other.A, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    elif final_var == final_other:
-        return True
+    
     return False
 
+#vvv={}
 # returns True or False, and the new bounds in case of True, otherwize the old ones
 def match(A, B, bounds):
     # pylint: disable=R0911
-    if A is None and B is None:
-        return True, bounds
-    if not (A != None and B != None):
-        return False, bounds # one is None, one not, this is no match used for  different length of lists
-    new_bounds = {}
     final_A = final_bound(A, bounds)
     final_B = final_bound(B, bounds)
     if final_A == final_B:
         return True, bounds
     if isinstance(final_A, var): # not bound
         if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
+            new_bounds = bounds.copy()
             new_bounds[final_A] = final_B
-            new_bounds.update(bounds)
             return True, new_bounds
         return False, bounds
     else:
         if isinstance(final_B, var):
-            if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
+            if not check_if_var_in_object(final_B, final_A, bounds): # isinstance(final_A, var) not possible is gurantied
+                new_bounds = bounds.copy()
                 new_bounds[final_B] = final_A
-                new_bounds.update(bounds)
                 return True, new_bounds
             return False, bounds
         else:
             if isinstance(final_A, l) and isinstance(final_B, l):
                 t1, b2 = match(final_A.A, final_B.A, bounds)
                 if t1:
-                    b2.update(bounds)
                     t2, b3 = match(final_A.B, final_B.B, b2)
                     if t2:
                         return True, b3
@@ -193,12 +213,14 @@ def formatl(X_orig, bounds, var_nums):
     ret = ""
     komma = ""
     closeb = ""
+    if isinstance(X, empty):
+        return "[]"
     if isinstance(X, l):
         ret = "["
         closeb = "]"
     while isinstance(X, l):
         ret += komma + formatl(X.A, bounds, var_nums)
-        X = X.B
+        X = final_bound(X.B, bounds)
         komma = ","
     if isinstance(X, list):
         ret += "["
@@ -215,7 +237,7 @@ def formatl(X_orig, bounds, var_nums):
             v_num = len(var_nums)
             var_nums[X] = v_num
         ret += komma+"_"+str(v_num)
-    elif X != None:
+    elif X != None and X != empty_list:
         ret += komma+str(X)
     return ret+closeb
 
@@ -243,8 +265,8 @@ limit_recursion_with_track_for_ai_length = [9999999]
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
-
-    if limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
+    #print(predicate, formatl(infolist,bounds,{}))
+    if track_for_ai and limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
         yield False, bounds
 
     elif cut_count[0] > 1:
@@ -337,6 +359,7 @@ def ask_print(predicate, infolist, bounds, wait_for_enter):
         if t:
             if track_for_ai:
                 print("track_for_ai", track_for_ai[0])
+            #print(formatl(infolist, new_bounds, vvv))
             print(formatl(infolist, new_bounds, {}))
             if wait_for_enter:
                 cc = input('. (stop) a (all):')
@@ -375,7 +398,7 @@ def parse_imp(iii):
 
 # pylint: disable=W0106
 # dont know why pylint warning, line is from example code
-    pOBJECT << (pNAME | Suppress(',') | nestedBrackets)
+    pOBJECT << (pNAME | (Suppress(',') | '|') | nestedBrackets)
     pOBJECT.setParseAction(lambda result: result)
 # pylint: enable=W0106
 
@@ -410,8 +433,15 @@ def parse_imp(iii):
 
 def create_list(inlist, local_vars):
     if len(inlist) == 0:
-        return None
+        return empty_list
     o = inlist[0]
+    if o == '|':
+        #restlist
+        rest_variable = inlist[1]
+        if rest_variable[0].isupper():
+            return get_new_var(rest_variable, local_vars)
+        print("list rest must be a variable:", rest_variable)
+        return None
     if isinstance(o, list):
         return l(create_list(o, local_vars), create_list(inlist[1:], local_vars))
     if isinstance(o, basestring) and o[0].isupper():
@@ -420,7 +450,7 @@ def create_list(inlist, local_vars):
 
 def create_l(inlist, local_vars):
     if inlist == []:
-        return None
+        return empty_list
     o = inlist[0]
     if isinstance(o, list):
         o = create_list(o, local_vars)
@@ -468,7 +498,7 @@ def load_file(f):
 def prolog():
     print("\n#quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)")
     print("atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]")
-    print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,empty))")
+    print("also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,None))")
     while 1:
         command = input("PyProlog==> ")
         try:
@@ -509,6 +539,10 @@ except Exception as ee:
 # execute a test before
 init_data()
 load_file('test.pl')
+
+#todo !!!!
+#print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
+
 #print_assertz_data()
 
 # start prolog promt
