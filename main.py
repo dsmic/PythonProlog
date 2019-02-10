@@ -102,7 +102,7 @@ class calc(object):
         if t:
             t1, new_bounds = match(str(result), term.A, bounds)
             if t1:
-                new_bounds.update(bounds)
+                #new_bounds.update(bounds)
                 return True, new_bounds
         return False, bounds
 
