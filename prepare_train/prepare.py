@@ -18,14 +18,14 @@ from random import random
 import numpy as np
 from keras.utils import to_categorical
 from keras.models import Sequential
-from keras.layers import Activation, Embedding
-from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU
+from keras.layers import Activation, Embedding, Dense, Flatten, GlobalMaxPooling1D, GlobalAveragePooling1D
+from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU, SimpleRNN
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
 import keras.backend
 #LSTM_use = CuDNNLSTM
 LSTM_use = CuDNNGRU
-
+#LSTM_use = SimpleRNN
 # uncomment the following to disable CuDNN support
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #LSTM_use = LSTM
@@ -43,35 +43,6 @@ parser.add_argument('--final_name', dest='final_name',  type=str, default='final
 parser.add_argument('--pretrained_name', dest='pretrained_name',  type=str, default=None)
 
 args = parser.parse_args()
-
-
-###################################################################
-# Network
-hidden_size = args.hidden_size
-
-if args.pretrained_name is not None:
-  from keras.models import load_model
-  model = load_model(args.pretrained_name)
-  print("loaded model")
-else:
-  model = Sequential()
-  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False))
-  #model.add(Masking())
-  model.add(LSTM_use(hidden_size, return_sequences=True))
-  model.add(LSTM_use(max_output + 1, return_sequences=False))
-  model.add(Activation('softmax'))
-
-import inspect
-with open(__file__) as f:
-    a = f.readlines()
-startline = inspect.currentframe().f_lineno
-print(a[startline+1:startline+2])
-optimizer = RMSprop(lr=args.lr, rho=0.9, epsilon=None, decay=0)
-
-print("learning rate",keras.backend.eval(optimizer.lr))
-model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
-
-print(model.summary())
 
 
 vocab = {}
@@ -197,9 +168,44 @@ print("len of valid data", len(valid_data))
 print("max len of data", max_length, "max output", max_output)
 print(output_stats)
 
+
+###################################################################
+# Network
+hidden_size = args.hidden_size
+
+if args.pretrained_name is not None:
+  from keras.models import load_model
+  model = load_model(args.pretrained_name)
+  print("loaded model")
+else:
+  model = Sequential()
+  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False, input_shape=(max_length,)))
+  model.add(LSTM_use(hidden_size, return_sequences=True))
+  model.add(GlobalMaxPooling1D())
+#  model.add(SeqSelfAttention(attention_activation='sigmoid'))
+#  model.add(LSTM_use(hidden_size, return_sequences=True))
+#  model.add(LSTM_use(max_output + 1, return_sequences=False))
+#  model.add(Flatten())
+  model.add(Dense(max_output +1))
+  model.add(Activation('softmax'))
+
+import inspect
+with open(__file__) as f:
+    a = f.readlines()
+startline = inspect.currentframe().f_lineno
+print(a[startline+1:startline+2])
+optimizer = RMSprop(lr=args.lr, rho=0.9, epsilon=None, decay=0)
+
+print("learning rate",keras.backend.eval(optimizer.lr))
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['categorical_accuracy'])
+
+print(model.summary())
+
+
 def str_to_int_list(x, ml):
     # uncomment for all the same length
-    # x = ('{:>'+str(ml)+'}').format(x)
+    # x = x[::-1]
+    x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
         ret.append(vocab[cc])
