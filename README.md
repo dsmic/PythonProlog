@@ -8,7 +8,7 @@ concentrate on the rules.
 The test.pl file shows some usage and is executed before starting the prolog console.
 
 
-This is the working in progress version (branch prepareAI)
+This is the work in progress version (branch prepareAI)
 
 ToDo:
 
