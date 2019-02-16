@@ -147,7 +147,7 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    
+
     return False
 
 #vvv={}
