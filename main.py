@@ -14,6 +14,7 @@ licence: gplv3, see licence.txt file
 from __future__ import print_function    # (at top of module)
 from builtins import input
 from past.builtins import basestring    # pip install future
+import numpy as np
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
@@ -73,6 +74,15 @@ class calc(object):
                     F.write(formatl(op2, bounds, {})+"\n")
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
+            elif op == 'rnn':
+                # op1 is the structure,to check
+                # op2 allows to manipulate the mode
+                #       eg. random with probability     ['rnn',X,'random']
+                #           best (no probability)       ['rnn',X,'best']
+                #
+                # returns 0 - max_output
+                return True, call_rnn(op1, bounds)
+            
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -103,7 +113,7 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-
+                    
 
             return False, calc_object
 
@@ -159,7 +169,7 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    
+
     return False
 
 #vvv={}
@@ -530,6 +540,66 @@ def print_assertz_data():
                 else:
                     print(predicate, formatl(fact_or_rule, {}, {}))
 
+
+###############################################################################
+# Neural Network
+#
+###############################################################################
+model = None    # pretrained keras model
+ml = 0          # length of onput string
+
+#setup vocabulary
+vocab = {}
+count_chars = 0
+def add_translate(cc):
+    #pylint: disable=W0603
+    global count_chars
+    vocab[cc] = count_chars
+    count_chars += 1
+
+for c in range(ord('a'), ord('z')+1):
+    add_translate(chr(c))
+for c in range(ord('0'), ord('9')+1):
+    add_translate(chr(c))
+
+add_translate(',')
+add_translate('[')
+add_translate(']')
+add_translate('_')
+add_translate(' ')
+
+def str_to_int_list(x):
+    # uncomment for all the same length
+    # x = x[::-1]
+    x = x[-ml:] #if to long only take the last ml characters
+    x = ('{:>'+str(ml)+'}').format(x)
+    ret = []
+    for cc in x:
+        ret.append(vocab[cc])
+    return ret
+
+def call_rnn(term, bounds):
+    term_str = formatl(term, bounds, {})
+    print(term_str)
+    model_input = str_to_int_list(term_str)
+    print(model_input)
+    tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
+    prediction = model.predict(tmp_x)
+    print(prediction)
+    predict_pos = np.argmax(prediction[0])
+    return predict_pos
+
+def setup_rnn(model_name):
+    global model, ml
+    from keras.models import load_model
+    model = load_model(model_name)
+    ml = model.layers[0].input_shape[1]
+
+
+###############################################################################
+
+
+
 try:
 # pylint: disable=W0122, W0703
     exec(open('config.py').read())
@@ -539,6 +609,8 @@ except Exception as ee:
 # execute a test before
 init_data()
 load_file('test.pl')
+
+setup_rnn('final_model.hdf5')
 
 #todo !!!!
 #print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")

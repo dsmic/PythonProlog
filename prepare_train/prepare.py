@@ -176,7 +176,7 @@ hidden_size = args.hidden_size
 if args.pretrained_name is not None:
   from keras.models import load_model
   model = load_model(args.pretrained_name)
-  print("loaded model")
+  print("loaded model",model.layers[0].input_shape[1])
 else:
   model = Sequential()
   model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False, input_shape=(max_length,)))
