@@ -7,7 +7,7 @@ Created on Sat Jan 19 15:41:50 2019
 licence: gplv3, see licence.txt file
 
 """
-# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801
+# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801, R0205, R1705
 
 # pylint: disable=W0622
 # for usage with python2 and python3
@@ -82,7 +82,7 @@ class calc(object):
                 #
                 # returns 0 - max_output
                 return True, call_rnn(op1, bounds)
-            
+
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -113,7 +113,7 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-                    
+
 
             return False, calc_object
 
@@ -247,7 +247,7 @@ def formatl(X_orig, bounds, var_nums):
             v_num = len(var_nums)
             var_nums[X] = v_num
         ret += komma+"_"+str(v_num)
-    elif X != None and X != empty_list:
+    elif X is not None and X != empty_list:
         ret += komma+str(X)
     return ret+closeb
 
@@ -533,7 +533,7 @@ def init_data():
 # helper functions for AI
 def print_assertz_data():
     for predicate in assertz_data:
-        if predicate != 'is' and predicate != 'cut':
+        if predicate not in ('is', 'cut'):
             for fact_or_rule in assertz_data[predicate]:
                 if isinstance(fact_or_rule, rule):
                     print(predicate, formatl(fact_or_rule.A, {}, {}), formatl(fact_or_rule.B, {}, {}))
@@ -590,6 +590,7 @@ def call_rnn(term, bounds):
     return predict_pos
 
 def setup_rnn(model_name):
+    #pylint: disable=W0603
     global model, ml
     from keras.models import load_model
     model = load_model(model_name)
@@ -611,9 +612,6 @@ init_data()
 load_file('test.pl')
 
 setup_rnn('final_model.hdf5')
-
-#todo !!!!
-#print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
 
 #print_assertz_data()
 
