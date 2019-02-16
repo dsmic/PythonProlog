@@ -15,6 +15,8 @@ from __future__ import print_function    # (at top of module)
 from builtins import input
 from past.builtins import basestring    # pip install future
 import numpy as np
+from random import random
+
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
@@ -81,7 +83,7 @@ class calc(object):
                 #           best (no probability)       ['rnn',X,'best']
                 #
                 # returns 0 - max_output
-                return True, call_rnn(op1, bounds)
+                return True, call_rnn(op1, op2, bounds)
 
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
@@ -578,16 +580,32 @@ def str_to_int_list(x):
         ret.append(vocab[cc])
     return ret
 
-def call_rnn(term, bounds):
+def call_rnn(term, mode, bounds):
     term_str = formatl(term, bounds, {})
-    print(term_str)
+    #print(term_str)
     model_input = str_to_int_list(term_str)
-    print(model_input)
+    #print(model_input)
     tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
-    prediction = model.predict(tmp_x)
-    print(prediction)
-    predict_pos = np.argmax(prediction[0])
-    return predict_pos
+    prediction = model.predict(tmp_x)[0]
+    #print(prediction)
+    if mode == 'best':
+        predict_pos = np.argmax(prediction)
+        return predict_pos
+    else:
+        sum_prediction = prediction.sum()
+        num_prediction = prediction.size
+        factor = float(mode) / 100 # in percent
+        sum_prediction += factor
+        factor /= num_prediction
+        rand = sum_prediction * random()
+        sss = 0
+        #print(rand, sum_prediction, factor)
+        for i in range(num_prediction):
+            sss += prediction[i] + factor
+            #print(sss,i)
+            if rand < sss:
+                return i
+        return num_prediction-1
 
 def setup_rnn(model_name):
     #pylint: disable=W0603
