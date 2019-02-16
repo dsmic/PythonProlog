@@ -7,8 +7,7 @@ Created on Sat Jan 19 15:41:50 2019
 licence: gplv3, see licence.txt file
 
 """
-# pylint: disable=C0103, C0301, C0111, R0903
-
+# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801, R0205, R1705
 
 # pylint: disable=W0622
 # for usage with python2 and python3
@@ -226,7 +225,7 @@ def formatl(X_orig, bounds, var_nums):
             v_num = len(var_nums)
             var_nums[X] = v_num
         ret += komma+"_"+str(v_num)
-    elif X != None and X != empty_list:
+    elif X is not None and X != empty_list:
         ret += komma+str(X)
     return ret+closeb
 
