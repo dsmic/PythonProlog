@@ -7,6 +7,13 @@ concentrate on the rules.
 
 The test.pl file shows some usage and is executed before starting the prolog console.
 
+Latest added features:
+
+#trace    (toggles tracing)
+
+
+
+
 ```
 Starting: (you might have to install python modules from requirements.txt)
 

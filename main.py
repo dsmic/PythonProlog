@@ -22,6 +22,8 @@ from past.builtins import basestring    # pip install future
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
+trace_on = False
+
 #creats vars
 class var(object): # prolog variable
     pass
@@ -242,6 +244,11 @@ def ask_list(list_of_calls, bounds, cut_count):
     xx = ask(first.A, first.B, bounds, cut_count)
     for x0 in xx:
         t, new_bounds = x0
+        if trace_on:
+            mark = "#f#"
+            if t:
+                mark = "#t#"
+            print(mark,first.A,formatl(first.B, new_bounds, {}))
         if t:
             if len(rest) > 0:
                 xxx = ask_list(rest, new_bounds, cut_count)
@@ -366,7 +373,10 @@ def parse_imp(iii):
     pLOAD = Keyword("#load") + pNAME
     pLOAD.setParseAction(lambda result: {"result": "load", "file": result[1]})
 
-    pTOP = (pQUIT ^pCLEAR ^ pLOAD ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
+    pTRACE = Keyword("#trace")
+    pTRACE.setParseAction(lambda result: {"result": "trace"})
+
+    pTOP = (pQUIT ^ pCLEAR ^ pTRACE ^ pLOAD ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
 
     result = pTOP.parseString(iii)[0]
     return result
@@ -399,6 +409,7 @@ def create_l(inlist, local_vars):
     return l(o, create_l(inlist[1:], local_vars))
 
 def imp(iii):
+    global trace_on
     if iii.strip() == '':
         return True
     local_vars = {}
@@ -426,6 +437,9 @@ def imp(iii):
         load_file(ii['file']+'.pl')
     elif ii['result'] == 'clear':
         init_data()
+    elif ii['result'] == 'trace':
+        trace_on = not trace_on
+        print("Trace now", trace_on)
     return True
 
 def load_file(f):
