@@ -12,11 +12,11 @@ licence: gplv3, see licence.txt file
 # pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
+from random import random
+from random import randint
 from builtins import input
 from past.builtins import basestring    # pip install future
 import numpy as np
-from random import random
-from random import randint
 
 # pylint: enable=W0622
 
@@ -120,7 +120,7 @@ class calc(object):
                             return True, str(1)
                         return False, str(0)
                     elif op == 'rand':
-                        return True, randint(int(op1),int(op2))
+                        return True, randint(int(op1), int(op2))
 
             return False, calc_object
 
@@ -329,7 +329,7 @@ def ask(predicate, infolist, bounds, cut_count):
                 while 1:
                     yield True, bounds
             else:
-                for i in range(how_often):
+                for _ in range(how_often):
                     yield True, bounds
                 yield False, bounds
         else:
@@ -402,6 +402,7 @@ from pyparsing import (Group, Keyword, NoMatch, Suppress, Word, ZeroOrMore, Forw
                        ParseException, alphas)
 # pylint: enable=C0413
 def parse_imp(iii):
+    #pylint: disable= R0914
     # Grammar:
     #
     # <expr> ::= <integer>
