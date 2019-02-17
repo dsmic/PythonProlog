@@ -306,10 +306,8 @@ def ask(predicate, infolist, bounds, cut_count):
                     t, new_bounds = match(infolist, line, bounds)
                     if t:
                         yield True, new_bounds
-                    yield False, bounds
-                if cut_count_local[0] > 1:
-                    break
-                yield False, bounds
+                    else:
+                        yield False, bounds
 
 def ask_print(predicate, infolist, bounds):
     xx = ask(predicate, infolist, bounds, [0])
