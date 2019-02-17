@@ -12,3 +12,5 @@ dotest0(X,Y,Z,ZZ):- cuttest(X),test3([Y,4]),calculate(3,Z),fak(4,24),eqq(ZZ,all_
 dotest0(X,Y,Z,testsFailed).
 dotest(ZZ):-dotest0(wasser,4,9,ZZ),cut(1).
 dotest(ZZ)?
+tt(X):-repeat(3),is(X,[rand,1,4]).
+tt(X)?

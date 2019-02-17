@@ -16,6 +16,7 @@ from builtins import input
 from past.builtins import basestring    # pip install future
 import numpy as np
 from random import random
+from random import randint
 
 # pylint: enable=W0622
 
@@ -52,6 +53,9 @@ empty_list = empty #this is a reference to the class, this way deepcopy would wo
 
 #marks cut predicate
 class cut(object):
+    pass
+
+class repeat(object):
     pass
 
 #marks calc for is
@@ -115,7 +119,8 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-
+                    elif op == 'rand':
+                        return True, randint(int(op1),int(op2))
 
             return False, calc_object
 
@@ -318,6 +323,15 @@ def ask(predicate, infolist, bounds, cut_count):
                     else:
                         track_for_ai[0] = local_track
                 yield xx
+        elif isinstance(contains, repeat):
+            how_often = int(final_bound(infolist.A, bounds))
+            if how_often == 0:
+                while 1:
+                    yield True, bounds
+            else:
+                for i in range(how_often):
+                    yield True, bounds
+                yield False, bounds
         else:
             for lll in contains:
                 # check if correct to yield every output ??? only the last??
@@ -438,7 +452,10 @@ def parse_imp(iii):
     pLOAD = Keyword("#load") + pNAME
     pLOAD.setParseAction(lambda result: {"result": "load", "file": result[1]})
 
-    pTOP = (pQUIT ^pCLEAR ^ pLOAD ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
+    pLOADRNN = Keyword("#loadrnn") + pNAME
+    pLOADRNN.setParseAction(lambda result: {"result": "loadrnn", "file": result[1]})
+
+    pTOP = (pQUIT ^pCLEAR ^ pLOAD ^ pLOADRNN ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
 
     result = pTOP.parseString(iii)[0]
     return result
@@ -472,7 +489,7 @@ def create_l(inlist, local_vars):
 
 def imp(iii, wait_for_enter=False):
     if iii.strip() == '':
-        return True, None
+        return True
     local_vars = {}
     ii = parse_imp(iii)
     if ii['result'] == 'fact':
@@ -493,13 +510,14 @@ def imp(iii, wait_for_enter=False):
             right_side.append(create_l(onecall, local_vars))
         assertz(predicate, rule(create_l(left_side, local_vars), right_side))
     elif ii['result'] == 'quit':
-        return False, None
+        return False
     elif ii['result'] == 'load':
-        return True, ii['file']
+        load_file(ii['file']+'.pl')
+    elif ii['result'] == 'loadrnn':
+        setup_rnn(ii['file']+'.hdf5')
     elif ii['result'] == 'clear':
         init_data()
-        return True, None
-    return True, None
+    return True
 
 def load_file(f):
     ff = open(f)
@@ -514,11 +532,9 @@ def prolog():
     while 1:
         command = input("PyProlog==> ")
         try:
-            t, f = imp(command, True)
+            t = imp(command, True)
             if not t:
                 break
-            if f is not None:
-                load_file(f+'.pl')
 
         except RuntimeError as re:
             print("Runtime Error: ", re)
@@ -530,6 +546,7 @@ def init_data():
     assertz_data.clear()
     assertz_data['is'] = calc()
     assertz_data['cut'] = cut()
+    assertz_data['repeat'] = repeat()
 
 
 # helper functions for AI
@@ -629,7 +646,7 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-setup_rnn('final_model.hdf5')
+#setup_rnn('final_model.hdf5')
 
 #print_assertz_data()
 
