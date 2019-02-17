@@ -7,12 +7,14 @@ concentrate on the rules.
 
 The test.pl file shows some usage and is executed before starting the prolog console.
 
-Starting:
-python main.py (you might have to install python modules from requirements.txt)
+```
+Starting: (you might have to install python modules from requirements.txt)
+
+python main.py 
 
 [all_tests_are_OK]
 
-```
+
 #quit to leave prolog, #clear to clean database #load to load a file (adding ending .pl)
 atom( .... ) format is only allowed for predicates, if you want to have add mult use lists with [add,X,Y]
 also for structures use [ .....  ], internally it is transfered to [x0,x1] -> l(x0,l(x1,None))
