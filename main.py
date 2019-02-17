@@ -14,6 +14,10 @@ licence: gplv3, see licence.txt file
 from __future__ import print_function    # (at top of module)
 from builtins import input
 from past.builtins import basestring    # pip install future
+
+from random import random
+from random import randint
+
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
@@ -46,6 +50,9 @@ empty_list = empty #this is a reference to the class, this way deepcopy would wo
 
 #marks cut predicate
 class cut(object):
+    pass
+
+class repeat(object):
     pass
 
 #marks calc for is
@@ -91,7 +98,8 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-
+                    elif op == 'rand':
+                        return True, randint(int(op1),int(op2))
 
             return False, calc_object
 
@@ -266,6 +274,15 @@ def ask(predicate, infolist, bounds, cut_count):
             for xx in iter([(True, bounds), (False, bounds)]):
                 cut_count[0] += 1 #returning True and False and increasing count every time
                 yield xx
+        elif isinstance(contains, repeat):
+            how_often = int(final_bound(infolist.A, bounds))
+            if how_often == 0:
+                while 1:
+                    yield True, bounds
+            else:
+                for i in range(how_often):
+                    yield True, bounds
+                yield False, bounds
         else:
             for lll in contains:
                 cut_count_local = [0]
@@ -382,7 +399,9 @@ def create_l(inlist, local_vars):
         o = get_new_var(o, local_vars)
     return l(o, create_l(inlist[1:], local_vars))
 
-def imp(iii):
+def imp(iii, wait_for_enter=False):
+    if iii.strip() == '':
+        return True
     local_vars = {}
     ii = parse_imp(iii)
     if ii['result'] == 'fact':
@@ -403,13 +422,12 @@ def imp(iii):
             right_side.append(create_l(onecall, local_vars))
         assertz(predicate, rule(create_l(left_side, local_vars), right_side))
     elif ii['result'] == 'quit':
-        return False, None
+        return False
     elif ii['result'] == 'load':
-        return True, ii['file']
+        load_file(ii['file']+'.pl')
     elif ii['result'] == 'clear':
         init_data()
-        return True, None
-    return True, None
+    return True
 
 def load_file(f):
     ff = open(f)
@@ -424,11 +442,9 @@ def prolog():
     while 1:
         command = input("PyProlog==> ")
         try:
-            t, f = imp(command)
+            t = imp(command, True)
             if not t:
                 break
-            if f is not None:
-                load_file(f+'.pl')
 
         except RuntimeError as re:
             print("Runtime Error: ", re)
@@ -440,6 +456,7 @@ def init_data():
     assertz_data.clear()
     assertz_data['is'] = calc()
     assertz_data['cut'] = cut()
+    assertz_data['repeat'] = repeat()
 
 # execute a test before
 init_data()
