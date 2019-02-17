@@ -12,11 +12,10 @@ licence: gplv3, see licence.txt file
 # pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
+from random import randint
 from builtins import input
 from past.builtins import basestring    # pip install future
 
-from random import random
-from random import randint
 
 # pylint: enable=W0622
 
@@ -99,7 +98,7 @@ class calc(object):
                             return True, str(1)
                         return False, str(0)
                     elif op == 'rand':
-                        return True, randint(int(op1),int(op2))
+                        return True, randint(int(op1), int(op2))
 
             return False, calc_object
 
@@ -280,7 +279,7 @@ def ask(predicate, infolist, bounds, cut_count):
                 while 1:
                     yield True, bounds
             else:
-                for i in range(how_often):
+                for _ in range(how_often):
                     yield True, bounds
                 yield False, bounds
         else:
@@ -399,7 +398,7 @@ def create_l(inlist, local_vars):
         o = get_new_var(o, local_vars)
     return l(o, create_l(inlist[1:], local_vars))
 
-def imp(iii, wait_for_enter=False):
+def imp(iii):
     if iii.strip() == '':
         return True
     local_vars = {}
@@ -442,7 +441,7 @@ def prolog():
     while 1:
         command = input("PyProlog==> ")
         try:
-            t = imp(command, True)
+            t = imp(command)
             if not t:
                 break
 
