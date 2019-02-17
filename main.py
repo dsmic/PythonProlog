@@ -382,7 +382,6 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             track_for_ai[0] = local_track
                         yield False, bounds
-                yield False, bounds
 
 def ask_print(predicate, infolist, bounds, wait_for_enter):
     if track_for_ai:
