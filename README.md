@@ -23,8 +23,9 @@ concentrate on the rules.
 The test.pl file shows some usage and is executed before starting the prolog console.
 
 ```
-Starting:
-python main.py (you might have to install python modules from requirements.txt)
+Starting: (you might have to install python modules from requirements.txt)
+
+python main.py 
 
 [all_tests_are_OK]
 
