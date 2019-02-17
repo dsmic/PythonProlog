@@ -130,7 +130,7 @@ class calc(object):
         calc_object = term.B.A
         t, result = self.calculate(calc_object, bounds)
         if t:
-            t1, new_bounds = match(str(result), term.A, bounds)
+            t1, new_bounds = match(term.A, str(result), bounds)
             if t1:
                 #new_bounds.update(bounds)
                 return True, new_bounds
@@ -189,17 +189,17 @@ def match(A, B, bounds):
     final_B = final_bound(B, bounds)
     if final_A == final_B:
         return True, bounds
-    if isinstance(final_A, var): # not bound
-        if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
+    if isinstance(final_B, var): # not bound
+        if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
             new_bounds = bounds.copy()
-            new_bounds[final_A] = final_B
+            new_bounds[final_B] = final_A
             return True, new_bounds
         return False, bounds
     else:
-        if isinstance(final_B, var):
-            if not check_if_var_in_object(final_B, final_A, bounds): # isinstance(final_A, var) not possible is gurantied
+        if isinstance(final_A, var):
+            if not check_if_var_in_object(final_A, final_B, bounds): # isinstance(final_B, var) not possible is gurantied
                 new_bounds = bounds.copy()
-                new_bounds[final_B] = final_A
+                new_bounds[final_A] = final_B
                 return True, new_bounds
             return False, bounds
         else:
