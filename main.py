@@ -24,7 +24,7 @@ import numpy as np
 # import readline #@UnusedVariable
 
 
-only_one_answer = False
+only_one_answer = True
 
 #creats vars
 class var(object): # prolog variable
