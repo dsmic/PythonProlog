@@ -26,6 +26,8 @@ import numpy as np
 
 only_one_answer = True
 
+trace_on = False
+
 #creats vars
 class var(object): # prolog variable
     pass
@@ -128,7 +130,7 @@ class calc(object):
         calc_object = term.B.A
         t, result = self.calculate(calc_object, bounds)
         if t:
-            t1, new_bounds = match(str(result), term.A, bounds)
+            t1, new_bounds = match(term.A, str(result), bounds)
             if t1:
                 #new_bounds.update(bounds)
                 return True, new_bounds
@@ -187,17 +189,17 @@ def match(A, B, bounds):
     final_B = final_bound(B, bounds)
     if final_A == final_B:
         return True, bounds
-    if isinstance(final_A, var): # not bound
-        if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
+    if isinstance(final_B, var): # not bound
+        if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
             new_bounds = bounds.copy()
-            new_bounds[final_A] = final_B
+            new_bounds[final_B] = final_A
             return True, new_bounds
         return False, bounds
     else:
-        if isinstance(final_B, var):
-            if not check_if_var_in_object(final_B, final_A, bounds): # isinstance(final_A, var) not possible is gurantied
+        if isinstance(final_A, var):
+            if not check_if_var_in_object(final_A, final_B, bounds): # isinstance(final_B, var) not possible is gurantied
                 new_bounds = bounds.copy()
-                new_bounds[final_B] = final_A
+                new_bounds[final_A] = final_B
                 return True, new_bounds
             return False, bounds
         else:
@@ -264,6 +266,11 @@ def ask_list(list_of_calls, bounds, cut_count):
     xx = ask(first.A, first.B, bounds, cut_count)
     for x0 in xx:
         t, new_bounds = x0
+        if trace_on:
+            mark = "#f#"
+            if t:
+                mark = "#t#"
+            print(mark,first.A,formatl(first.B, new_bounds, {}))
         if t:
             if len(rest) > 0:
                 xxx = ask_list(rest, new_bounds, cut_count)
@@ -375,7 +382,6 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             track_for_ai[0] = local_track
                         yield False, bounds
-                yield False, bounds
 
 def ask_print(predicate, infolist, bounds, wait_for_enter):
     if track_for_ai:
@@ -456,7 +462,10 @@ def parse_imp(iii):
     pLOADRNN = Keyword("#loadrnn") + pNAME
     pLOADRNN.setParseAction(lambda result: {"result": "loadrnn", "file": result[1]})
 
-    pTOP = (pQUIT ^pCLEAR ^ pLOAD ^ pLOADRNN ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
+    pTRACE = Keyword("#trace")
+    pTRACE.setParseAction(lambda result: {"result": "trace"})
+
+    pTOP = (pQUIT ^ pCLEAR ^ pTRACE ^ pLOAD ^ pLOADRNN  ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
 
     result = pTOP.parseString(iii)[0]
     return result
@@ -489,6 +498,7 @@ def create_l(inlist, local_vars):
     return l(o, create_l(inlist[1:], local_vars))
 
 def imp(iii, wait_for_enter=False):
+    global trace_on
     if iii.strip() == '':
         return True
     local_vars = {}
@@ -518,6 +528,9 @@ def imp(iii, wait_for_enter=False):
         setup_rnn(ii['file']+'.hdf5')
     elif ii['result'] == 'clear':
         init_data()
+    elif ii['result'] == 'trace':
+        trace_on = not trace_on
+        print("Trace now", trace_on)
     return True
 
 def load_file(f):
