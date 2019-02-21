@@ -17,12 +17,16 @@ eqn0([mmod,nn,A],nn).
 eqn0([mmod,[mult,N,X],N],nn).
 eqn0([mult,A,B],[mult,B,A]).
 
+
+predictdeb(X,Y):-repeat(10), is(Y,[rnn,X,30]), is(ZZ,[write,predict,[predict,X,Y]]).
+predict(X,Y):-repeat(10), is(Y,[rnn,X,30]).
+
 eqn1(0,X,Y,CC,DD):-eqn0(X,Y).
 eqn1(1,X,Y,CC,DD):-eqn0(Y,X).
-eqn1(2,[mmod,X,Y],[mmod,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(O0,X,X1,C1,DD), eqn1(O1,Y,Y1,C1,DD).
-eqn1(3,[add,X,Y],[add,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(O0,X,X1,C1,DD), eqn1(O1,Y,Y1,C1,DD).
-eqn1(4,[mult,X,Y],[mult,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(O0,X,X1,C1,DD), eqn1(O1,Y,Y1,C1,DD).
-eqn1(5,X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn1(O0,X,Z,C1,DD),eqn1(O1,Z,Y,C1,DD).
+eqn1(2,[mmod,X,Y],[mmod,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(X,O0),eqn1(O0,X,X1,C1,DD), predict(Y,O1), eqn1(O1,Y,Y1,C1,DD).
+eqn1(3,[add,X,Y],[add,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(X,O0),eqn1(O0,X,X1,C1,DD), predict(Y,O1), eqn1(O1,Y,Y1,C1,DD).
+eqn1(4,[mult,X,Y],[mult,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(X,O0),eqn1(O0,X,X1,C1,DD), predict(Y,O1), eqn1(O1,Y,Y1,C1,DD).
+eqn1(5,X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),predict(X,O0),eqn1(O0,X,Z,C1,DD), predict(Z,O1), eqn1(O1,Z,Y,C1,DD).
 eqn1(6,X,X,CC,DD):-is(Z1,[lower,CC,DD]).
 
 eqn0([mmod,[p,gproof],xproof],nn).

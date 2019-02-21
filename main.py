@@ -631,6 +631,8 @@ def call_rnn(term, mode, bounds):
         rand = sum_prediction * random()
         sss = 0
         #print(rand, sum_prediction, factor)
+        #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
+        #print()
         for i in range(num_prediction):
             sss += prediction[i] + factor
             #print(sss,i)
@@ -660,13 +662,13 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-#setup_rnn('final_model.hdf5')
+setup_rnn('final_model.hdf5')
 
 #print_assertz_data()
 
 # start prolog promt
-#init_data()
-#prolog()
+init_data()
+prolog()
 
 
 
