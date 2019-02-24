@@ -19,12 +19,13 @@ import numpy as np
 from keras.utils import to_categorical
 from keras.models import Sequential
 from keras.layers import Activation, Embedding, Dense, Flatten, GlobalMaxPooling1D, GlobalAveragePooling1D
-from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU, SimpleRNN
+from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU, SimpleRNN, GRU
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
 import keras.backend
 #LSTM_use = CuDNNLSTM
 LSTM_use = CuDNNGRU
+#LSTM_use = GRU
 #LSTM_use = SimpleRNN
 # uncomment the following to disable CuDNN support
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -34,6 +35,7 @@ LSTM_use = CuDNNGRU
 
 
 import argparse
+from random import shuffle
 
 parser = argparse.ArgumentParser(description='train recurrent net.')
 parser.add_argument('--lr', dest='lr',  type=float, default=1e-3)
@@ -77,6 +79,8 @@ print(vocab)
 output_stats = {}
 depth_num = 4
 expression_database = {}
+
+used_atoms = ['xproof', 'new', 'gproof', 'p', 'empty', 'ee', 'nn']
 
 for i in range(1, depth_num + 1):
     print("depth", i)
@@ -144,6 +148,9 @@ for key in expression_database:
                     #print(elements[2])
                     el2 = remove_first(elements[2])
                     data = elements[0]+ " " + el2
+                    shuffle(used_atoms)
+                    for ir in range(len(used_atoms)):
+                      data = data.replace('_'+str(ir),used_atoms[ir])
                     #print(output, data)
                     if output in output_stats:
                         output_stats[output] += 1
@@ -176,7 +183,7 @@ hidden_size = args.hidden_size
 if args.pretrained_name is not None:
   from keras.models import load_model
   model = load_model(args.pretrained_name)
-  print("loaded model")
+  print("loaded model",model.layers[0].input_shape[1])
 else:
   model = Sequential()
   model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False, input_shape=(max_length,)))
