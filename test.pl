@@ -11,4 +11,6 @@ fak(4,24)?
 dotest0(X,Y,Z,ZZ):- cuttest(X),test3([Y,4]),calculate(3,Z),fak(4,24),eqq(ZZ,all_tests_are_OK).
 dotest0(X,Y,Z,testsFailed).
 dotest(ZZ):-dotest0(wasser,4,9,ZZ),cut(1).
+tt(X):-repeat(3),is(X,[rand,1,4]).
+tt(X)?
 dotest(ZZ)?

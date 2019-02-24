@@ -7,20 +7,26 @@ Created on Sat Jan 19 15:41:50 2019
 licence: gplv3, see licence.txt file
 
 """
-# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801
+# pylint: disable=C0103, C0301, C0111, R0903, E0012, C1801, R0205, R1705
 
 # pylint: disable=W0622
 # for usage with python2 and python3
 from __future__ import print_function    # (at top of module)
+from random import random
+from random import randint
 from builtins import input
 from past.builtins import basestring    # pip install future
+import numpy as np
+
 # pylint: enable=W0622
 
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
 
-only_one_answer = False
+only_one_answer = True
+
+trace_on = False
 
 #creats vars
 class var(object): # prolog variable
@@ -51,6 +57,9 @@ empty_list = empty #this is a reference to the class, this way deepcopy would wo
 class cut(object):
     pass
 
+class repeat(object):
+    pass
+
 #marks calc for is
 class calc(object):
     # pylint: disable=R0911, R0912
@@ -73,6 +82,15 @@ class calc(object):
                     F.write(formatl(op2, bounds, {})+"\n")
                 F.close()
                 return True, str(1) #return 1, no sense in real calculations !!
+            elif op == 'rnn':
+                # op1 is the structure,to check
+                # op2 allows to manipulate the mode
+                #       eg. random with probability     ['rnn',X,'random']
+                #           best (no probability)       ['rnn',X,'best']
+                #
+                # returns 0 - max_output
+                return True, call_rnn(op1, op2, bounds)
+
             t, op1 = self.calculate(calc_object.B.A, bounds)
             if t:
                 t2, op2 = self.calculate(calc_object.B.B.A, bounds)
@@ -103,7 +121,8 @@ class calc(object):
                         if int(op1) == int(op2):
                             return True, str(1)
                         return False, str(0)
-
+                    elif op == 'rand':
+                        return True, randint(int(op1), int(op2))
 
             return False, calc_object
 
@@ -111,7 +130,7 @@ class calc(object):
         calc_object = term.B.A
         t, result = self.calculate(calc_object, bounds)
         if t:
-            t1, new_bounds = match(str(result), term.A, bounds)
+            t1, new_bounds = match(term.A, str(result), bounds)
             if t1:
                 #new_bounds.update(bounds)
                 return True, new_bounds
@@ -159,7 +178,7 @@ def check_if_var_in_object(final_var, final_other_in, bounds):
             return True
         if check_if_var_in_object(final_var, final_other.B, bounds):
             return True
-    
+
     return False
 
 #vvv={}
@@ -170,17 +189,17 @@ def match(A, B, bounds):
     final_B = final_bound(B, bounds)
     if final_A == final_B:
         return True, bounds
-    if isinstance(final_A, var): # not bound
-        if isinstance(final_B, var) or not check_if_var_in_object(final_A, final_B, bounds):
+    if isinstance(final_B, var): # not bound
+        if isinstance(final_A, var) or not check_if_var_in_object(final_B, final_A, bounds):
             new_bounds = bounds.copy()
-            new_bounds[final_A] = final_B
+            new_bounds[final_B] = final_A
             return True, new_bounds
         return False, bounds
     else:
-        if isinstance(final_B, var):
-            if not check_if_var_in_object(final_B, final_A, bounds): # isinstance(final_A, var) not possible is gurantied
+        if isinstance(final_A, var):
+            if not check_if_var_in_object(final_A, final_B, bounds): # isinstance(final_B, var) not possible is gurantied
                 new_bounds = bounds.copy()
-                new_bounds[final_B] = final_A
+                new_bounds[final_A] = final_B
                 return True, new_bounds
             return False, bounds
         else:
@@ -237,7 +256,7 @@ def formatl(X_orig, bounds, var_nums):
             v_num = len(var_nums)
             var_nums[X] = v_num
         ret += komma+"_"+str(v_num)
-    elif X != None and X != empty_list:
+    elif X is not None and X != empty_list:
         ret += komma+str(X)
     return ret+closeb
 
@@ -247,6 +266,11 @@ def ask_list(list_of_calls, bounds, cut_count):
     xx = ask(first.A, first.B, bounds, cut_count)
     for x0 in xx:
         t, new_bounds = x0
+        if trace_on:
+            mark = "#f#"
+            if t:
+                mark = "#t#"
+            print(mark,first.A,formatl(first.B, new_bounds, {}))
         if t:
             if len(rest) > 0:
                 xxx = ask_list(rest, new_bounds, cut_count)
@@ -306,6 +330,15 @@ def ask(predicate, infolist, bounds, cut_count):
                     else:
                         track_for_ai[0] = local_track
                 yield xx
+        elif isinstance(contains, repeat):
+            how_often = int(final_bound(infolist.A, bounds))
+            if how_often == 0:
+                while 1:
+                    yield True, bounds
+            else:
+                for _ in range(how_often):
+                    yield True, bounds
+                yield False, bounds
         else:
             for lll in contains:
                 # check if correct to yield every output ??? only the last??
@@ -349,7 +382,6 @@ def ask(predicate, infolist, bounds, cut_count):
                         if track_for_ai:
                             track_for_ai[0] = local_track
                         yield False, bounds
-                yield False, bounds
 
 def ask_print(predicate, infolist, bounds, wait_for_enter):
     if track_for_ai:
@@ -376,6 +408,7 @@ from pyparsing import (Group, Keyword, NoMatch, Suppress, Word, ZeroOrMore, Forw
                        ParseException, alphas)
 # pylint: enable=C0413
 def parse_imp(iii):
+    #pylint: disable= R0914
     # Grammar:
     #
     # <expr> ::= <integer>
@@ -426,7 +459,13 @@ def parse_imp(iii):
     pLOAD = Keyword("#load") + pNAME
     pLOAD.setParseAction(lambda result: {"result": "load", "file": result[1]})
 
-    pTOP = (pQUIT ^pCLEAR ^ pLOAD ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
+    pLOADRNN = Keyword("#loadrnn") + pNAME
+    pLOADRNN.setParseAction(lambda result: {"result": "loadrnn", "file": result[1]})
+
+    pTRACE = Keyword("#trace")
+    pTRACE.setParseAction(lambda result: {"result": "trace"})
+
+    pTOP = (pQUIT ^ pCLEAR ^ pTRACE ^ pLOAD ^ pLOADRNN  ^ pTOP_RULE ^ pTOP_FACT ^ pTOP_QUERY)
 
     result = pTOP.parseString(iii)[0]
     return result
@@ -459,8 +498,9 @@ def create_l(inlist, local_vars):
     return l(o, create_l(inlist[1:], local_vars))
 
 def imp(iii, wait_for_enter=False):
+    global trace_on
     if iii.strip() == '':
-        return True, None
+        return True
     local_vars = {}
     ii = parse_imp(iii)
     if ii['result'] == 'fact':
@@ -481,13 +521,17 @@ def imp(iii, wait_for_enter=False):
             right_side.append(create_l(onecall, local_vars))
         assertz(predicate, rule(create_l(left_side, local_vars), right_side))
     elif ii['result'] == 'quit':
-        return False, None
+        return False
     elif ii['result'] == 'load':
-        return True, ii['file']
+        load_file(ii['file']+'.pl')
+    elif ii['result'] == 'loadrnn':
+        setup_rnn(ii['file']+'.hdf5')
     elif ii['result'] == 'clear':
         init_data()
-        return True, None
-    return True, None
+    elif ii['result'] == 'trace':
+        trace_on = not trace_on
+        print("Trace now", trace_on)
+    return True
 
 def load_file(f):
     ff = open(f)
@@ -502,11 +546,9 @@ def prolog():
     while 1:
         command = input("PyProlog==> ")
         try:
-            t, f = imp(command, True)
+            t = imp(command, True)
             if not t:
                 break
-            if f is not None:
-                load_file(f+'.pl')
 
         except RuntimeError as re:
             print("Runtime Error: ", re)
@@ -518,17 +560,97 @@ def init_data():
     assertz_data.clear()
     assertz_data['is'] = calc()
     assertz_data['cut'] = cut()
+    assertz_data['repeat'] = repeat()
 
 
 # helper functions for AI
 def print_assertz_data():
     for predicate in assertz_data:
-        if predicate != 'is' and predicate != 'cut':
+        if predicate not in ('is', 'cut'):
             for fact_or_rule in assertz_data[predicate]:
                 if isinstance(fact_or_rule, rule):
                     print(predicate, formatl(fact_or_rule.A, {}, {}), formatl(fact_or_rule.B, {}, {}))
                 else:
                     print(predicate, formatl(fact_or_rule, {}, {}))
+
+
+###############################################################################
+# Neural Network
+#
+###############################################################################
+model = None    # pretrained keras model
+ml = 0          # length of onput string
+
+#setup vocabulary
+vocab = {}
+count_chars = 0
+def add_translate(cc):
+    #pylint: disable=W0603
+    global count_chars
+    vocab[cc] = count_chars
+    count_chars += 1
+
+for c in range(ord('a'), ord('z')+1):
+    add_translate(chr(c))
+for c in range(ord('0'), ord('9')+1):
+    add_translate(chr(c))
+
+add_translate(',')
+add_translate('[')
+add_translate(']')
+add_translate('_')
+add_translate(' ')
+
+def str_to_int_list(x):
+    # uncomment for all the same length
+    # x = x[::-1]
+    x = x[-ml:] #if to long only take the last ml characters
+    x = ('{:>'+str(ml)+'}').format(x)
+    ret = []
+    for cc in x:
+        ret.append(vocab[cc])
+    return ret
+
+def call_rnn(term, mode, bounds):
+    term_str = formatl(term, bounds, {})
+    #print(term_str)
+    model_input = str_to_int_list(term_str)
+    #print(model_input)
+    tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
+    prediction = model.predict(tmp_x)[0]
+    #print(prediction)
+    if mode == 'best':
+        predict_pos = np.argmax(prediction)
+        return predict_pos
+    else:
+        sum_prediction = prediction.sum()
+        num_prediction = prediction.size
+        factor = float(mode) / 100 # in percent
+        sum_prediction += factor
+        factor /= num_prediction
+        rand = sum_prediction * random()
+        sss = 0
+        #print(rand, sum_prediction, factor)
+        #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
+        #print()
+        for i in range(num_prediction):
+            sss += prediction[i] + factor
+            #print(sss,i)
+            if rand < sss:
+                return i
+        return num_prediction-1
+
+def setup_rnn(model_name):
+    #pylint: disable=W0603
+    global model, ml
+    from keras.models import load_model
+    model = load_model(model_name)
+    ml = model.layers[0].input_shape[1]
+
+
+###############################################################################
+
+
 
 try:
 # pylint: disable=W0122, W0703
@@ -540,14 +662,13 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-#todo !!!!
-#print("\n\nTODO\nlists must support [X|Y] to write usual prolog programs")
+setup_rnn('final_model.hdf5')
 
 #print_assertz_data()
 
 # start prolog promt
-#init_data()
-#prolog()
+init_data()
+prolog()
 
 
 
