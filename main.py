@@ -60,6 +60,61 @@ class cut(object):
 class repeat(object):
     pass
 
+class rnn(object):
+    def call_rnn(self, term, mode, bounds):
+        term_str = formatl(term, bounds, {})
+        #print(term_str)
+        model_input = str_to_int_list(term_str)
+        #print(model_input)
+        tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
+        prediction = model.predict(tmp_x)[0]
+        #print(prediction)
+        if mode == 'best':
+            predict_pos = np.argmax(prediction)
+            yield predict_pos
+        elif mode == 'order':
+            predict_sort = np.argsort(-prediction)
+            for xx in predict_sort:
+                yield xx
+        else:
+            sum_prediction = prediction.sum()
+            num_prediction = prediction.size
+            factor = float(mode) / 100 # in percent
+            sum_prediction += factor
+            factor /= num_prediction
+            rand = sum_prediction * random()
+            sss = 0
+            #print(rand, sum_prediction, factor)
+            #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
+            #print()
+            ret = num_prediction-1
+            for i in range(num_prediction):
+                sss += prediction[i] + factor
+                #print(sss,i)
+                if rand < sss:
+                    ret =  i
+            yield ret
+
+    def calculate(self, calc_object, bounds):
+        # This calculates recursively the int result of the list object
+        calc_object = final_bound(calc_object, bounds)
+        op1 = calc_object.A
+        op2 = calc_object.B.A
+        for xx in self.call_rnn(op1, op2, bounds):
+            yield True, xx
+        yield False, '0'
+
+    def do_calc(self, term, bounds):
+        calc_object = term.B.A
+        for (t, result) in self.calculate(calc_object, bounds):
+            if t:
+                t1, new_bounds = match(term.A, str(result), bounds)
+                if t1:
+                    #new_bounds.update(bounds)
+                    yield True, new_bounds
+            yield False, bounds
+
+
 #marks calc for is
 class calc(object):
     # pylint: disable=R0911, R0912
@@ -316,6 +371,19 @@ def ask(predicate, infolist, bounds, cut_count):
                 if track_for_ai:
                     track_for_ai[0] = local_track
                 yield False, bounds
+        elif isinstance(contains, rnn): #is predicate
+            for (t, new_bounds) in contains.do_calc(infolist, bounds):
+                if t:
+                    if track_for_ai:
+                        if local_count > 0:
+                            track_for_ai[0] = track_for_ai[0][:-1]
+                        local_count += 1
+                        track_for_ai[0] += [(predicate, formatl(infolist, bounds, {}))]
+                    yield t, new_bounds
+                else:
+                    if track_for_ai:
+                        track_for_ai[0] = local_track
+                    yield False, bounds
         elif isinstance(contains, cut): #cut predicate
             cut_count[0] = 0 # the last cut overwrites all other cuts in the rule
             for xx in iter([(True, bounds), (False, bounds)]):
@@ -559,6 +627,7 @@ def prolog():
 def init_data():
     assertz_data.clear()
     assertz_data['is'] = calc()
+    assertz_data['rnn'] = rnn()
     assertz_data['cut'] = cut()
     assertz_data['repeat'] = repeat()
 
@@ -669,7 +738,7 @@ setup_rnn('final_model.hdf5')
 # start prolog promt
 init_data()
 prolog()
-
+#load_file('deb.pl')
 
 
 # Examples which should work

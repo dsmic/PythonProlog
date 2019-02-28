@@ -11,6 +11,12 @@ eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn1(X,Z,C1,DD),eqn1(Z,
 
 
 
+rnn support:
+at the moment is(X,[rnn,term,mode]) and rnn(X,[term,mode]) is supported
+
+the rnn allowes mode order, which returns all...
+
+
 
 
 
