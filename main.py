@@ -69,31 +69,13 @@ class rnn(object):
         tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
         prediction = model.predict(tmp_x)[0]
         #print(prediction)
-        if mode == 'best':
-            predict_pos = np.argmax(prediction)
-            yield predict_pos
-        elif mode == 'order':
+        mode = int(mode)
+        if mode == 0:
             predict_sort = np.argsort(-prediction)
-            for xx in predict_sort:
-                yield xx
         else:
-            sum_prediction = prediction.sum()
-            num_prediction = prediction.size
-            factor = float(mode) / 100 # in percent
-            sum_prediction += factor
-            factor /= num_prediction
-            rand = sum_prediction * random()
-            sss = 0
-            #print(rand, sum_prediction, factor)
-            #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
-            #print()
-            ret = num_prediction-1
-            for i in range(num_prediction):
-                sss += prediction[i] + factor
-                #print(sss,i)
-                if rand < sss:
-                    ret =  i
-            yield ret
+            predict_sort = np.argsort(-prediction)[:mode]
+        for xx in predict_sort:
+            yield xx
 
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
