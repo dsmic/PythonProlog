@@ -61,7 +61,7 @@ class repeat(object):
     pass
 
 class rnn(object):
-    def call_rnn(self, term, mode, bounds):
+    def call_rnn(self, term, limit_number, limit_percent, bounds):
         term_str = formatl(term, bounds, {})
         #print(term_str)
         model_input = str_to_int_list(term_str)
@@ -69,20 +69,22 @@ class rnn(object):
         tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
         prediction = model.predict(tmp_x)[0]
         #print(prediction)
-        mode = int(mode)
-        if mode == 0:
+        limit_number = int(limit_number)
+        if limit_number == 0:
             predict_sort = np.argsort(-prediction)
         else:
-            predict_sort = np.argsort(-prediction)[:mode]
+            predict_sort = np.argsort(-prediction)[:limit_number]
         for xx in predict_sort:
-            yield xx
+            if float(prediction[xx])*100 > int(limit_percent):
+                yield xx
 
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
         calc_object = final_bound(calc_object, bounds)
         op1 = calc_object.A
         op2 = calc_object.B.A
-        for xx in self.call_rnn(op1, op2, bounds):
+        op3 = calc_object.B.B.A
+        for xx in self.call_rnn(op1, op2, op3, bounds):
             yield True, xx
 
     def do_calc(self, term, bounds):
