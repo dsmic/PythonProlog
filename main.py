@@ -102,7 +102,6 @@ class rnn(object):
         op2 = calc_object.B.A
         for xx in self.call_rnn(op1, op2, bounds):
             yield True, xx
-        yield False, '0'
 
     def do_calc(self, term, bounds):
         calc_object = term.B.A
@@ -112,7 +111,7 @@ class rnn(object):
                 if t1:
                     #new_bounds.update(bounds)
                     yield True, new_bounds
-            yield False, bounds
+        yield False, bounds
 
 
 #marks calc for is
