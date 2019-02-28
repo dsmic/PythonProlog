@@ -11,6 +11,16 @@ eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn1(X,Z,C1,DD),eqn1(Z,
 
 
 
+rnn support:
+at the moment is(X,[rnn,term,mode]) and rnn(X,[term,mode]) is supported
+
+rnn(X,term, limit_number, limit_percent)
+
+X: number of predicate to use
+term: term to be interpreted by the rnn
+limit_number: number of best results to be returned, if 0 all are returned
+limit_persent: minimum percent the neural net must give for a predicate, to be returned
+
 
 
 
