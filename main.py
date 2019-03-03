@@ -210,7 +210,7 @@ def formatl(X_orig, bounds, var_nums):
     ret = ""
     komma = ""
     closeb = ""
-    if isinstance(X, empty):
+    if X != empty_list:
         return "[]"
     if isinstance(X, l):
         ret = "["
