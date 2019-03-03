@@ -20,7 +20,10 @@ eqn0([mult,A,B],[mult,B,A]).
 
 predictdeb(X,Y):-repeat(3), is(Y,[rnn,X,30]), is(ZZ,[write,predict,[predict,X,Y]]).
 predict1(X,Y):-repeat(10), is(Y,[rnn,X,10]).
-predict(X,Y1):-is(Y,[rnn,X,best]),is(ZZ,[write,predict,[predict,X,Y]]).
+predict1(X,Y1):-is(Y,[rnn,X,best]),is(ZZ,[write,predict,[predict,X,Y]]).
+predict1(X,Y):-rnn(Y,[X,3,0]),is(ZZ,[write,predict,[predict,X,Y]]).
+predict1(X,Y):-rnn(Y,[X,0,0]).
+predict(X,Y).
 
 eqn1(0,X,Y,CC,DD):-is(ZZ,[write,predict,[donexxx,X,0]]),eqn0(X,Y).
 eqn1(1,X,Y,CC,DD):-is(ZZ,[write,predict,[donexxx,X,1]]),eqn0(Y,X).
