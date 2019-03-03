@@ -61,25 +61,20 @@ class repeat(object):
     pass
 
 class rnn(object):
-    return_sort = None
-    return_var = None
     def call_rnn(self, term, limit_number, limit_percent, bounds):
         term_str = formatl(term, bounds, {})
-        #print(term_str)
         model_input = str_to_int_list(term_str)
-        #print(model_input)
         tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
         prediction = model.predict(tmp_x)[0]
-        #print(prediction)
         limit_number = int(limit_number)
         if limit_number == 0:
             predict_sort = np.argsort(-prediction)
         else:
             predict_sort = np.argsort(-prediction)[:limit_number]
-        self.return_sort = str(predict_sort)
+        return_sort = str(predict_sort)
         for xx in predict_sort:
             if float(prediction[xx])*100 > int(limit_percent):
-                yield xx
+                yield xx, return_sort
 
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
@@ -88,20 +83,20 @@ class rnn(object):
         op2 = calc_object.B.A
         op3 = calc_object.B.B.A
         if calc_object.B.B.B != empty_list: 
-            self.return_var = calc_object.B.B.B.A
+            return_var = calc_object.B.B.B.A
         else:
-            self.return_var = None
+            return_var = None
         for xx in self.call_rnn(op1, op2, op3, bounds):
-            yield True, xx
+            yield True, xx, return_var
 
     def do_calc(self, term, bounds):
         calc_object = term.B.A
-        for (t, result) in self.calculate(calc_object, bounds):
+        for (t, (result, return_sort), return_var) in self.calculate(calc_object, bounds):
             if t:
                 t1, new_bounds = match(term.A, str(result), bounds)
                 if t1:
-                    if self.return_var is not None:
-                        t2, new_bounds2 = match(self.return_var, self.return_sort, new_bounds)
+                    if return_var is not None:
+                        t2, new_bounds2 = match(return_var, return_sort, new_bounds)
                         yield True, new_bounds2 # force true, as this is only used for debugging and should not break because no match
                     else:
                         yield True, new_bounds
@@ -337,7 +332,6 @@ limit_recursion_with_track_for_ai_length = [9999999]
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
-    #print(predicate, formatl(infolist,bounds,{}))
     if track_for_ai and limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
         yield False, bounds
 
@@ -452,7 +446,6 @@ def ask_print(predicate, infolist, bounds, wait_for_enter):
         if t:
             if track_for_ai:
                 print("track_for_ai", track_for_ai[0])
-            #print(formatl(infolist, new_bounds, vvv))
             print(formatl(infolist, new_bounds, {}))
             if wait_for_enter:
                 cc = input('. (stop) a (all):')
@@ -675,12 +668,9 @@ def str_to_int_list(x):
 
 def call_rnn(term, mode, bounds):
     term_str = formatl(term, bounds, {})
-    #print(term_str)
     model_input = str_to_int_list(term_str)
-    #print(model_input)
     tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
     prediction = model.predict(tmp_x)[0]
-    #print(prediction)
     if mode == 'best':
         predict_pos = np.argmax(prediction)
         return predict_pos
@@ -692,12 +682,8 @@ def call_rnn(term, mode, bounds):
         factor /= num_prediction
         rand = sum_prediction * random()
         sss = 0
-        #print(rand, sum_prediction, factor)
-        #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
-        #print()
         for i in range(num_prediction):
             sss += prediction[i] + factor
-            #print(sss,i)
             if rand < sss:
                 return i
         return num_prediction-1
