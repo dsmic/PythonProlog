@@ -71,7 +71,7 @@ class rnn(object):
             predict_sort = np.argsort(-prediction)
         else:
             predict_sort = np.argsort(-prediction)[:limit_number]
-        return_sort = str(predict_sort)
+        return_sort = str(predict_sort) + ''.join([ " {:.2e}".format(prediction[k]) for k in predict_sort])
         for xx in predict_sort:
             if float(prediction[xx])*100 > int(limit_percent):
                 yield xx, return_sort
@@ -710,7 +710,7 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-setup_rnn('final_model_200.hdf5')
+setup_rnn('final_model_8.hdf5')
 
 #print_assertz_data()
 
