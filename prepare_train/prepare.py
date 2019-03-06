@@ -11,14 +11,13 @@ Created on Fri Feb  1 15:50:23 2019
 # restarting in the same console throws an tensorflow error, force a new console
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
 from random import shuffle
 from random import random
 
 import numpy as np
 from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Activation, Embedding, Dense, Flatten, GlobalMaxPooling1D, GlobalAveragePooling1D
+from keras.models import Sequential, Model, Input
+from keras.layers import Activation, Embedding, Dense, Flatten, GlobalMaxPooling1D, GlobalAveragePooling1D, Lambda
 from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU, SimpleRNN, GRU
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
@@ -79,6 +78,7 @@ print(vocab)
 output_stats = {}
 depth_num = 4
 expression_database = {}
+expression_num ={}
 
 used_atoms = ['xproof', 'new', 'gproof', 'p', 'empty', 'ee', 'nn']
 
@@ -95,6 +95,12 @@ for i in range(1, depth_num + 1):
           if expression not in expression_database:
               count_new_lines += 1
               expression_database[expression] = line.strip()
+              expression_num[expression] = 1
+          else:
+              #fill with random
+              expression_num[expression] += 1
+              if random() < 1.0 / float(expression_num[expression]):
+                  expression_database[expression] = line.strip()
     print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
 print('total lines', len(expression_database))
 
@@ -174,27 +180,57 @@ print("len of valid data", len(valid_data))
 
 print("max len of data", max_length, "max output", max_output)
 print(output_stats)
+sumoutput=0
+for i in output_stats:
+  sumoutput += output_stats[i]
+for i in output_stats:
+  print(i,output_stats[i]/sumoutput)
+
 
 
 ###################################################################
 # Network
+
+
+def attentions_layer(x):
+  x1 = x[:,:,1:]
+  x2 = x[:,:,0:1]
+  x2 = keras.backend.softmax(x2)
+#  x2 = keras.backend.print_tensor(x2, str(x2))
+#  x1 = keras.backend.print_tensor(x1, str(x1))
+  x=x1*x2
+#  x = keras.backend.print_tensor(x, str(x))
+  return x
+
 hidden_size = args.hidden_size
 
 if args.pretrained_name is not None:
   from keras.models import load_model
   model = load_model(args.pretrained_name)
   print("loaded model",model.layers[0].input_shape[1])
+  ml = model.layers[0].input_shape[1]
+  if (ml != max_length):
+    print("model length",ml,"different from data length",max_length)
+    max_length = ml
 else:
-  model = Sequential()
-  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False, input_shape=(max_length,)))
-  model.add(LSTM_use(hidden_size, return_sequences=True))
-  model.add(GlobalMaxPooling1D())
-#  model.add(SeqSelfAttention(attention_activation='sigmoid'))
+#  model = Sequential()
+#  model.add(Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False, input_shape=(max_length,)))
 #  model.add(LSTM_use(hidden_size, return_sequences=True))
 #  model.add(LSTM_use(max_output + 1, return_sequences=False))
-#  model.add(Flatten())
-  model.add(Dense(max_output +1))
-  model.add(Activation('softmax'))
+#  model.add(Dense(max_output +1))
+#  model.add(Activation('softmax'))
+
+  inputs = Input(shape=(max_length,))
+  embeds = Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False)(inputs)
+  lstm1 = LSTM_use(hidden_size, return_sequences=True)(embeds)
+  lstm1b = Lambda(attentions_layer)(lstm1)
+  lstm2 = LSTM_use(hidden_size, return_sequences=False)(lstm1b)
+  x = Dense(max_output +1)(lstm2)
+  predictions = Activation('softmax')(x)
+  model = Model(inputs=inputs, outputs=predictions)
+
+
+
 
 import inspect
 with open(__file__) as f:
@@ -210,8 +246,9 @@ print(model.summary())
 
 
 def str_to_int_list(x, ml):
+    # uncomment for reverse
+    #x = x[::-1]
     # uncomment for all the same length
-    # x = x[::-1]
     x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
