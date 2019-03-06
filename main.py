@@ -24,7 +24,7 @@ import numpy as np
 # import readline #@UnusedVariable
 
 
-only_one_answer = True
+only_one_answer = False
 
 trace_on = False
 
@@ -74,9 +74,10 @@ class rnn(object):
             predict_sort = np.argsort(-prediction)
         else:
             predict_sort = np.argsort(-prediction)[:limit_number]
+        return_sort = str(predict_sort) + ''.join([ " {:.2e}".format(prediction[k]) for k in predict_sort])
         for xx in predict_sort:
             if float(prediction[xx])*100 > int(limit_percent):
-                yield xx
+                yield xx, return_sort
 
     def calculate(self, calc_object, bounds):
         # This calculates recursively the int result of the list object
@@ -84,16 +85,23 @@ class rnn(object):
         op1 = calc_object.A
         op2 = calc_object.B.A
         op3 = calc_object.B.B.A
+        if calc_object.B.B.B != empty_list: 
+            return_var = calc_object.B.B.B.A
+        else:
+            return_var = None
         for xx in self.call_rnn(op1, op2, op3, bounds):
-            yield True, xx
+            yield True, xx, return_var
 
     def do_calc(self, term, bounds):
         calc_object = term.B.A
-        for (t, result) in self.calculate(calc_object, bounds):
+        for (t, (result, return_sort), return_var) in self.calculate(calc_object, bounds):
             if t:
                 t1, new_bounds = match(term.A, str(result), bounds)
                 if t1:
-                    #new_bounds.update(bounds)
+                    if return_var is not None:
+                        t2, new_bounds2 = match(return_var, return_sort, new_bounds)
+                        yield True, new_bounds2 # force true, as this is only used for debugging and should not break because no match
+                    else:
                     yield True, new_bounds
         yield False, bounds
 
@@ -656,8 +664,8 @@ add_translate(' ')
 def str_to_int_list(x):
     # uncomment for all the same length
     # x = x[::-1]
-    x = x[-ml:] #if to long only take the last ml characters
-    x = ('{:>'+str(ml)+'}').format(x)
+    # x = x[-ml:] #if to long only take the last ml characters
+    # x = ('{:>'+str(ml)+'}').format(x)
     ret = []
     for cc in x:
         ret.append(vocab[cc])
@@ -714,13 +722,13 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-setup_rnn('final_model.hdf5')
+setup_rnn('final_model_8.hdf5')
 
 #print_assertz_data()
 
 # start prolog promt
-init_data()
-prolog()
+#init_data()
+#prolog()
 #load_file('deb.pl')
 
 
