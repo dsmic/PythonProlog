@@ -63,12 +63,9 @@ class repeat(object):
 class rnn(object):
     def call_rnn(self, term, limit_number, limit_percent, bounds):
         term_str = formatl(term, bounds, {})
-        #print(term_str)
         model_input = str_to_int_list(term_str)
-        #print(model_input)
         tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
         prediction = model.predict(tmp_x)[0]
-        #print(prediction)
         limit_number = int(limit_number)
         if limit_number == 0:
             predict_sort = np.argsort(-prediction)
@@ -102,7 +99,7 @@ class rnn(object):
                         t2, new_bounds2 = match(return_var, return_sort, new_bounds)
                         yield True, new_bounds2 # force true, as this is only used for debugging and should not break because no match
                     else:
-                    yield True, new_bounds
+                        yield True, new_bounds
         yield False, bounds
 
 
@@ -278,7 +275,7 @@ def formatl(X_orig, bounds, var_nums):
     ret = ""
     komma = ""
     closeb = ""
-    if isinstance(X, empty):
+    if X == empty_list:
         return "[]"
     if isinstance(X, l):
         ret = "["
@@ -335,7 +332,6 @@ limit_recursion_with_track_for_ai_length = [9999999]
 #generates the solutions
 def ask(predicate, infolist, bounds, cut_count):
     # pylint: disable=R0101, R0912, R0915, R0914
-    #print(predicate, formatl(infolist,bounds,{}))
     if track_for_ai and limit_recursion_with_track_for_ai_length and len(track_for_ai[0]) > limit_recursion_with_track_for_ai_length[0]:
         yield False, bounds
 
@@ -450,7 +446,6 @@ def ask_print(predicate, infolist, bounds, wait_for_enter):
         if t:
             if track_for_ai:
                 print("track_for_ai", track_for_ai[0])
-            #print(formatl(infolist, new_bounds, vvv))
             print(formatl(infolist, new_bounds, {}))
             if wait_for_enter:
                 cc = input('. (stop) a (all):')
@@ -673,12 +668,9 @@ def str_to_int_list(x):
 
 def call_rnn(term, mode, bounds):
     term_str = formatl(term, bounds, {})
-    #print(term_str)
     model_input = str_to_int_list(term_str)
-    #print(model_input)
     tmp_x = np.array([model_input], dtype=int).reshape((1, -1))
     prediction = model.predict(tmp_x)[0]
-    #print(prediction)
     if mode == 'best':
         predict_pos = np.argmax(prediction)
         return predict_pos
@@ -690,12 +682,8 @@ def call_rnn(term, mode, bounds):
         factor /= num_prediction
         rand = sum_prediction * random()
         sss = 0
-        #print(rand, sum_prediction, factor)
-        #for i in range(num_prediction): print('{:6.3f}'.format(prediction[i]), end='')
-        #print()
         for i in range(num_prediction):
             sss += prediction[i] + factor
-            #print(sss,i)
             if rand < sss:
                 return i
         return num_prediction-1
@@ -727,7 +715,8 @@ setup_rnn('final_model_8.hdf5')
 #print_assertz_data()
 
 # start prolog promt
-#init_data()
+init_data()
+load_file('prooftest.pl')
 #prolog()
 #load_file('deb.pl')
 
