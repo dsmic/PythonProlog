@@ -22,8 +22,8 @@ from keras.layers import LSTM, CuDNNLSTM, CuDNNGRU, SimpleRNN, GRU
 from keras.optimizers import Adam, SGD, RMSprop, Nadam
 from keras.callbacks import ModelCheckpoint
 import keras.backend
-#LSTM_use = CuDNNLSTM
-LSTM_use = CuDNNGRU
+LSTM_use = CuDNNLSTM
+#LSTM_use = CuDNNGRU
 #LSTM_use = GRU
 #LSTM_use = SimpleRNN
 # uncomment the following to disable CuDNN support
@@ -42,6 +42,8 @@ parser.add_argument('--epochs', dest='epochs',  type=int, default=50)
 parser.add_argument('--hidden_size', dest='hidden_size',  type=int, default=50)
 parser.add_argument('--final_name', dest='final_name',  type=str, default='final_model')
 parser.add_argument('--pretrained_name', dest='pretrained_name',  type=str, default=None)
+parser.add_argument('--attention', dest='attention',  type=int, default=0)
+parser.add_argument('--depth', dest='depth',  type=int, default=3)
 
 args = parser.parse_args()
 
@@ -76,9 +78,10 @@ def check_all_chars_in(x):
 print(vocab)
 
 output_stats = {}
-depth_num = 4
+depth_num = args.depth
 expression_database = {}
-expression_num ={}
+expression_num = {}
+expression_depth = {} #do not overwrite lower depth
 
 used_atoms = ['xproof', 'new', 'gproof', 'p', 'empty', 'ee', 'nn']
 
@@ -96,28 +99,34 @@ for i in range(1, depth_num + 1):
               count_new_lines += 1
               expression_database[expression] = line.strip()
               expression_num[expression] = 1
+              expression_depth[expression] = i
           else:
               #fill with random
-              expression_num[expression] += 1
-              if random() < 1.0 / float(expression_num[expression]):
-                  expression_database[expression] = line.strip()
+              if i == expression_depth[expression] and expression != 'nn' and expression != 'ee':
+                  expression_num[expression] += 1
+                  #print(expression,expression_num[expression],expression,line.strip())
+                  if random() < 1.0 / float(expression_num[expression]):
+                      expression_database[expression] = line.strip()
     print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
 print('total lines', len(expression_database))
 
 
 
-def remove_first(sss):
+def remove_first(sss, nums_to_remove):
     counter = 0
     pos = 1
     pp = 1
+    num_found = 0
     for cc in sss[1:]:
         if cc == '[':
             counter += 1
         elif cc == ']':
             counter -= 1
         elif cc == ',' and counter == 0:
-            pos = pp
-            break
+            num_found += 1
+            if num_found == nums_to_remove:
+              pos = pp
+              break
         pp += 1
     rest = sss[pos+1:-1]
     counter = 0
@@ -137,6 +146,8 @@ def remove_first(sss):
 train_data = []
 max_length = 0
 max_output = 0
+
+only_one_data ={}
 for key in expression_database:
     #print(key, expression_database[key])
     tosplit = expression_database[key][1:]
@@ -145,28 +156,33 @@ for key in expression_database:
     splitted = tosplit.split("), ")
     for ob in splitted:
         elements = ob.split(", ")
+        #print(elements)
         if len(elements) == 3:
             if not check_all_chars_in(elements[0]+' '+elements[1]+elements[2]):
                 print("chars missing", elements[0], elements[1], elements[2])
             else:
                 output = int(elements[1]) - 1 #logging counts from 1, we need 0
+                #print(output)
                 if elements[0] == 'eqn1':
                     #print(elements[2])
-                    el2 = remove_first(elements[2])
+                    el2 = remove_first(elements[2],2)
                     data = elements[0]+ " " + el2
+                    #print(data)
                     shuffle(used_atoms)
                     for ir in range(len(used_atoms)):
                       data = data.replace('_'+str(ir),used_atoms[ir])
-                    #print(output, data)
-                    if output in output_stats:
-                        output_stats[output] += 1
-                    else:
-                        output_stats[output]=1
-                    train_data.append((output, data))
-                    if len(data) > max_length:
-                        max_length = len(data)
-                    if output > max_output:
-                        max_output = output
+                    if data not in only_one_data: #only for debugging to allow the rnn get 100% accurency
+                      print(data, output)
+                      if output in output_stats:
+                          output_stats[output] += 1
+                      else:
+                          output_stats[output]=1
+                      train_data.append((output, data))
+                      if len(data) > max_length:
+                          max_length = len(data)
+                      if output > max_output:
+                          max_output = output
+                      only_one_data[data]= output
 
 shuffle(train_data)
 len_full_data = len(train_data)
@@ -193,9 +209,10 @@ for i in output_stats:
 
 
 def attentions_layer(x):
+  from keras import backend as K
   x1 = x[:,:,1:]
   x2 = x[:,:,0:1]
-  x2 = keras.backend.softmax(x2)
+  x2 = K.softmax(x2)
 #  x2 = keras.backend.print_tensor(x2, str(x2))
 #  x1 = keras.backend.print_tensor(x1, str(x1))
   x=x1*x2
@@ -219,13 +236,19 @@ else:
 #  model.add(LSTM_use(max_output + 1, return_sequences=False))
 #  model.add(Dense(max_output +1))
 #  model.add(Activation('softmax'))
-
-  inputs = Input(shape=(max_length,))
-  embeds = Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=False)(inputs)
+  
+  inputs = Input(shape=(None,))
+  embeds = Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=True)(inputs)
   lstm1 = LSTM_use(hidden_size, return_sequences=True)(embeds)
-  lstm1b = Lambda(attentions_layer)(lstm1)
-  lstm2 = LSTM_use(hidden_size, return_sequences=False)(lstm1b)
-  x = Dense(max_output +1)(lstm2)
+  if args.attention == 1:
+    lstm1b = Lambda(attentions_layer)(lstm1)
+  else:
+    lstm1b = lstm1
+  lstm4 = LSTM_use(hidden_size, return_sequences=False)(lstm1b)
+#  x1 = Dense(hidden_size, activation='relu')(lstm4)
+#  x2 = Dense(hidden_size, activation='relu')(x1)
+#  x3 = Dense(hidden_size, activation='relu')(x2)
+  x = Dense(max_output +1)(lstm4)
   predictions = Activation('softmax')(x)
   model = Model(inputs=inputs, outputs=predictions)
 
@@ -249,7 +272,7 @@ def str_to_int_list(x, ml):
     # uncomment for reverse
     #x = x[::-1]
     # uncomment for all the same length
-    x = ('{:>'+str(ml)+'}').format(x)
+    #x = ('{:>'+str(ml)+'}').format(x[-ml:])
     ret = []
     for cc in x:
         ret.append(vocab[cc])
