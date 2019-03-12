@@ -85,104 +85,158 @@ expression_depth = {} #do not overwrite lower depth
 
 used_atoms = ['xproof', 'new', 'gproof', 'p', 'empty', 'ee', 'nn']
 
-for i in range(1, depth_num + 1):
-    print("depth", i)
-    count_lines = 0
-    count_new_lines = 0
-    f1 = open('tttt'+str(i)+'.tmp')
-    f2 = open('tttx'+str(i)+'.tmp')
-    for line in f1:
-        if i < 5 or random()>0.95:
-          expression = f2.readline().strip()
-          count_lines += 1
-          if expression not in expression_database:
-              count_new_lines += 1
-              expression_database[expression] = line.strip()
-              expression_num[expression] = 1
-              expression_depth[expression] = i
-          else:
-              #fill with random
-              if i == expression_depth[expression] and expression != 'nn' and expression != 'ee':
-                  expression_num[expression] += 1
-                  #print(expression,expression_num[expression],expression,line.strip())
-                  if random() < 1.0 / float(expression_num[expression]):
-                      expression_database[expression] = line.strip()
-    print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
-print('total lines', len(expression_database))
+#handle manual written clause input to clause selection log file
 
-
-
-def remove_first(sss, nums_to_remove):
+def split_brackets(sss):
     counter = 0
-    pos = 1
+    pos = -1
     pp = 1
     num_found = 0
-    for cc in sss[1:]:
+    for cc in sss:
         if cc == '[':
             counter += 1
         elif cc == ']':
             counter -= 1
         elif cc == ',' and counter == 0:
             num_found += 1
-            if num_found == nums_to_remove:
+            if num_found == 1:
               pos = pp
               break
         pp += 1
-    rest = sss[pos+1:-1]
-    counter = 0
-    pos = 1
-    pp = 1
-    for cc in rest:
-        if cc == '[':
-            counter += 1
-        elif cc == ']':
-            counter -= 1
-        elif cc == ',' and counter == 0:
-            pos = pp
-            break
-        pp += 1
-    return rest[:pos-1]
+    if pos == -1:
+        return [sss,'']
+    return [sss[:pos-1],sss[pos:]]
 
 train_data = []
 max_length = 0
 max_output = 0
 
-only_one_data ={}
-for key in expression_database:
-    #print(key, expression_database[key])
-    tosplit = expression_database[key][1:]
-    tosplit = tosplit[:-1].replace("'", "")
-    tosplit = tosplit[:-1].replace("(", "")
-    splitted = tosplit.split("), ")
-    for ob in splitted:
-        elements = ob.split(", ")
-        #print(elements)
-        if len(elements) == 3:
-            if not check_all_chars_in(elements[0]+' '+elements[1]+elements[2]):
-                print("chars missing", elements[0], elements[1], elements[2])
-            else:
-                output = int(elements[1]) - 1 #logging counts from 1, we need 0
-                #print(output)
-                if elements[0] == 'eqn1':
-                    #print(elements[2])
-                    el2 = remove_first(elements[2],2)
-                    data = elements[0]+ " " + el2
-                    #print(data)
-                    shuffle(used_atoms)
-                    for ir in range(len(used_atoms)):
-                      data = data.replace('_'+str(ir),used_atoms[ir])
-                    if data not in only_one_data: #only for debugging to allow the rnn get 100% accurency
-                      print(data, output)
-                      if output in output_stats:
-                          output_stats[output] += 1
-                      else:
-                          output_stats[output]=1
-                      train_data.append((output, data))
-                      if len(data) > max_length:
-                          max_length = len(data)
-                      if output > max_output:
-                          max_output = output
-                      only_one_data[data]= output
+
+for i in range(1, depth_num+1):
+  print("depth", i)
+  count_lines = 0
+  count_new_lines = 0
+  f1 = open('tttx'+str(i)+'.tmp')
+  for line in f1:
+    line = line.strip()
+    print("\nl#l",line)
+    line = line[1:-1]
+    while len(line)>0:
+      [el,line] = split_brackets(line)
+      p= el.find(',')
+      output = int(el[1:p])
+      data = el[p+1:]
+      print(el,"-",output,"-",data)
+      train_data.append((int(output), data))
+      if len(data) > max_length:
+          max_length = len(data)
+      if output > max_output:
+          max_output = output
+     
+  
+    
+
+
+
+# This was the code for track evaluation
+#for i in range(1, depth_num + 1):
+#    print("depth", i)
+#    count_lines = 0
+#    count_new_lines = 0
+#    f1 = open('tttt'+str(i)+'.tmp')
+#    f2 = open('tttx'+str(i)+'.tmp')
+#    for line in f1:
+#        if i < 5 or random()>0.95:
+#          expression = f2.readline().strip()
+#          count_lines += 1
+#          if expression not in expression_database:
+#              count_new_lines += 1
+#              expression_database[expression] = line.strip()
+#              expression_num[expression] = 1
+#              expression_depth[expression] = i
+#          else:
+#              #fill with random
+#              if i == expression_depth[expression] and expression != 'nn' and expression != 'ee':
+#                  expression_num[expression] += 1
+#                  #print(expression,expression_num[expression],expression,line.strip())
+#                  if random() < 1.0 / float(expression_num[expression]):
+#                      expression_database[expression] = line.strip()
+#    print('files num', i, 'lines', count_lines, 'new_lines', count_new_lines)
+#print('total lines', len(expression_database))
+
+
+
+#def remove_first(sss, nums_to_remove):
+#    counter = 0
+#    pos = 1
+#    pp = 1
+#    num_found = 0
+#    for cc in sss[1:]:
+#        if cc == '[':
+#            counter += 1
+#        elif cc == ']':
+#            counter -= 1
+#        elif cc == ',' and counter == 0:
+#            num_found += 1
+#            if num_found == nums_to_remove:
+#              pos = pp
+#              break
+#        pp += 1
+#    rest = sss[pos+1:-1]
+#    counter = 0
+#    pos = 1
+#    pp = 1
+#    for cc in rest:
+#        if cc == '[':
+#            counter += 1
+#        elif cc == ']':
+#            counter -= 1
+#        elif cc == ',' and counter == 0:
+#            pos = pp
+#            break
+#        pp += 1
+#    return rest[:pos-1]
+
+#train_data = []
+#max_length = 0
+#max_output = 0
+
+#only_one_data ={}
+#for key in expression_database:
+#    #print(key, expression_database[key])
+#    tosplit = expression_database[key][1:]
+#    tosplit = tosplit[:-1].replace("'", "")
+#    tosplit = tosplit[:-1].replace("(", "")
+#    splitted = tosplit.split("), ")
+#    for ob in splitted:
+#        elements = ob.split(", ")
+#        #print(elements)
+#        if len(elements) == 3:
+#            if not check_all_chars_in(elements[0]+' '+elements[1]+elements[2]):
+#                print("chars missing", elements[0], elements[1], elements[2])
+#            else:
+#                output = int(elements[1]) - 1 #logging counts from 1, we need 0
+#                #print(output)
+#                if elements[0] == 'eqn1':
+#                    #print(elements[2])
+#                    el2 = remove_first(elements[2],2)
+#                    data = elements[0]+ " " + el2
+#                    #print(data)
+#                    shuffle(used_atoms)
+#                    for ir in range(len(used_atoms)):
+#                      data = data.replace('_'+str(ir),used_atoms[ir])
+#                    if data not in only_one_data: # and output != 8: #only for debugging to allow the rnn get 100% accurency
+#                      print(data, output)
+#                      if output in output_stats:
+#                          output_stats[output] += 1
+#                      else:
+#                          output_stats[output]=1
+#                      train_data.append((output, data))
+#                      if len(data) > max_length:
+#                          max_length = len(data)
+#                      if output > max_output:
+#                          max_output = output
+#                      only_one_data[data]= output
 
 shuffle(train_data)
 len_full_data = len(train_data)
@@ -193,6 +247,9 @@ valid_data = train_data[(len_full_data-len_div_10):]
 train_data = train_data[:-len_div_10]
 print("len of train data", len(train_data))
 print("len of valid data", len(valid_data))
+
+#print('debugging, maxoutput increased!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+#max_output += 1
 
 print("max len of data", max_length, "max output", max_output)
 print(output_stats)
