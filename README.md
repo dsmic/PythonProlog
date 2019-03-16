@@ -2,6 +2,17 @@
 
 This is the work in progress version (branch prepareAI)
 
+
+This version can proof infinity of prime numbers from a set of rules without intermediate handwritten proof steps.
+
+it is trained in the prepareAI directory by python3 prepare.py --lr 0.0001,
+model copied to final_eqn0.hdf5
+and started python3 main.py
+
+The search space seems to be drastically reduced, but it is not guarantied, that the proof succeeds, 
+as only the first three guesses of the rnn are used.
+
+
 ToDo:
 
 - not clear, how to allow broad search with it? But maybe it must not be handled by the engine immediatly, but can be done by code as 
