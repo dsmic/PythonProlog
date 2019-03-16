@@ -17,6 +17,8 @@ eqn0(13,[mmod,nn,A],nn).
 eqn0(14,[mmod,[mult,N,X],N],nn).
 eqn0(15,[mult,A,B],[mult,B,A]).
 
+eqn0(16,[mmod,[p,gproof],xproof],nn).
+
 try1(X):-repeat(4),is(X,[rand,0,8]).
 try(X).
 
@@ -30,7 +32,6 @@ eqn1(6,[mult,X,Y],[mult,X1,Y1],CC,DD,VV,NN):-is(Z1,[lower,CC,DD]), is(C1,[add,CC
 eqn1(7,[mult,X,Y],[mult,X1,Y1],CC,DD,VV,NN):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqq(X,X1), try(T2), eqn1(T2,Y,Y1,C1,DD).
 eqn1(8,X,Y,CC,DD,VV,NN):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), try(T1), eqn1(T1,X,Z,C1,DD,VV,VV1), try(T2), eqn1(T2,Z,Y,C1,DD,VV1,NN).
 
-eqn0([mmod,[p,gproof],xproof],nn).
 
 eqn2(X,Y,CC,DD,F1,F2):-eqn1(T,X,Y,CC,DD,[],NN),is(RR,[write,F1,NN]),is(RRR,[write,F2,track]).
 eqn2(ee,Y,1,1,tttx1,tttt1)?
