@@ -710,7 +710,7 @@ except Exception as ee:
 init_data()
 load_file('test.pl')
 
-setup_rnn('final_model_8.hdf5')
+setup_rnn('final_eqn0.hdf5')
 
 #print_assertz_data()
 
