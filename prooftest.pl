@@ -1,21 +1,21 @@
 eqq(X,X).
 
-eqn0([p,empty], ee).
-eqn0([p,[g,X,G]],[mult,X,[p,G]]).
-eqn0([mult,A, ee],A).
-eqn0([mult,A, nn],nn).
-eqn0([mult,[mult,A,B],C],[mult,A,[mult,B,C]]).
-eqn0([mult,A,[add,B,C]],[add,[mult,A,B],[mult,A,C]]).
-eqn0([add,A,nn],A).
-eqn0([add,A,ee],[s,A]).
-eqn0([add,A,[s,B]],[s,[add,A,B]]).
-eqn0([mmod,ee,[s,X]],ee).
-eqn0([mmod,[add,A,B],C],[mmod,[add,[mmod,A,C],[mmod,B,C]],C]).
-eqn0([mmod,[mult,A,B],C],[mmod,[mult,[mmod,A,C],[mmod,B,C]],C]).
-eqn0([mmod,A,A],nn).
-eqn0([mmod,nn,A],nn).
-eqn0([mmod,[mult,N,X],N],nn).
-eqn0([mult,A,B],[mult,B,A]).
+eqn0(0,[p,empty], ee).
+eqn0(1,[p,[g,X,G]],[mult,X,[p,G]]).
+eqn0(2,[mult,A, ee],A).
+eqn0(3,[mult,A, nn],nn).
+eqn0(4,[mult,[mult,A,B],C],[mult,A,[mult,B,C]]).
+eqn0(5,[mult,A,[add,B,C]],[add,[mult,A,B],[mult,A,C]]).
+eqn0(6,[add,A,nn],A).
+eqn0(7,[add,A,ee],[s,A]).
+eqn0(8,[add,A,[s,B]],[s,[add,A,B]]).
+eqn0(9,[mmod,ee,[s,X]],ee).
+eqn0(10,[mmod,[add,A,B],C],[mmod,[add,[mmod,A,C],[mmod,B,C]],C]).
+eqn0(11,[mmod,[mult,A,B],C],[mmod,[mult,[mmod,A,C],[mmod,B,C]],C]).
+eqn0(12,[mmod,A,A],nn).
+eqn0(13,[mmod,nn,A],nn).
+eqn0(14,[mmod,[mult,N,X],N],nn).
+eqn0(15,[mult,A,B],[mult,B,A]).
 
 
 predictdeb(X,Y):-repeat(3), is(Y,[rnn,X,30]), is(ZZ,[write,predict,[predict,X,Y]]).
@@ -30,8 +30,8 @@ predict(X,Y,debug).
 output(X,Y):-is(ZZ,[write,predict,[predict,X,Y]]).
 output1(X,Y).
 
-eqn1(1,X,Y,CC,DD):-eqn0(X,Y).
-eqn1(0,X,Y,CC,DD):-eqn0(Y,X).
+eqn1(1,X,Y,CC,DD):-eqn0(A,X,Y).
+eqn1(0,X,Y,CC,DD):-eqn0(A,Y,X).
 eqn1(2,[mmod,X,Y],[mmod,X1,Y],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(X,O0,DEB), eqn1(O0,X,X1,C1,DD), output(O0, DEB).
 eqn1(3,[mmod,X,Y],[mmod,X,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(Y,O1,DEB2), eqn1(O1,Y,Y1,C1,DD), output(O1, DEB2).
 eqn1(4,[add,X,Y],[add,X1,Y],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), predict(X,O0,DEB), eqn1(O0,X,X1,C1,DD), output(O0, DEB).

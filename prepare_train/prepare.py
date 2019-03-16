@@ -44,9 +44,13 @@ parser.add_argument('--final_name', dest='final_name',  type=str, default='final
 parser.add_argument('--pretrained_name', dest='pretrained_name',  type=str, default=None)
 parser.add_argument('--attention', dest='attention',  type=int, default=0)
 parser.add_argument('--depth', dest='depth',  type=int, default=3)
+parser.add_argument('--debug', dest='debug', action='store_true')
+parser.add_argument('--only_one', dest='only_one', action='store_true')
 
 args = parser.parse_args()
 
+debug = args.debug
+only_one = args.only_one
 
 vocab = {}
 count_chars = 0
@@ -111,6 +115,7 @@ train_data = []
 max_length = 0
 max_output = 0
 
+only_one_data ={}
 
 for i in range(1, depth_num+1):
   print("depth", i)
@@ -119,19 +124,28 @@ for i in range(1, depth_num+1):
   f1 = open('tttx'+str(i)+'.tmp')
   for line in f1:
     line = line.strip()
-    print("\nl#l",line)
+    if debug:
+       print("\nl#l",line)
     line = line[1:-1]
     while len(line)>0:
       [el,line] = split_brackets(line)
       p= el.find(',')
       output = int(el[1:p])
       data = el[p+1:]
-      print(el,"-",output,"-",data)
-      train_data.append((int(output), data))
-      if len(data) > max_length:
-          max_length = len(data)
-      if output > max_output:
-          max_output = output
+      if debug:
+          print(el,"-",output,"-",data)
+      if data not in only_one_data:
+        if only_one:
+          only_one_data[data]=1
+        train_data.append((int(output), data))
+        if len(data) > max_length:
+            max_length = len(data)
+        if output > max_output:
+            max_output = output
+        if output in output_stats:
+            output_stats[output] += 1
+        else:
+            output_stats[output]=1
      
   
     
@@ -256,8 +270,8 @@ print(output_stats)
 sumoutput=0
 for i in output_stats:
   sumoutput += output_stats[i]
-for i in output_stats:
-  print(i,output_stats[i]/sumoutput)
+for i,v in sorted(output_stats.items()):
+  print(i,v/sumoutput)
 
 
 
