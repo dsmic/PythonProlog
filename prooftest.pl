@@ -24,7 +24,7 @@ predict1(X,Y):-repeat(10), is(Y,[rnn,X,10]).
 predict1(X,Y1):-is(Y,[rnn,X,best]),is(ZZ,[write,predict,[predict,X,Y]]).
 predict1(X,Y):-rnn(Y,[X,3,0]),is(ZZ,[write,predict,[predict,X,Y]]).
 
-predict2(X,Y, DEB):-rnn(Y,[X,3,0,DEB]).
+predict2(X,Y, DEB):-rnn(Y,[X,2,0,DEB]).
 
 predict22(X,Y,debug).
 
@@ -51,4 +51,4 @@ eqn1(O,[mmod,[mult,[p,gproof],new],xproof], [mmod,[mult,[mmod,[p,gproof],xproof]
 eqn1(O,[mmod,[mult,[mmod,[p,gproof],xproof],[mmod,new,xproof]],xproof], [mmod,[mult,nn,[mmod,new,xproof]],xproof],1,4)?
 eqn1(O,[mmod,[mult,nn,[mmod,new,xproof]],xproof], nn,1,4)?
 
-eqn1(O,[mmod,[mult,[p,gproof],new],xproof], nn,1,8)?
+eqn1(O,[mmod,[mult,[p,gproof],new],xproof], nn,1,5)?
