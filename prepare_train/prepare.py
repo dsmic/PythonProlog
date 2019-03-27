@@ -46,10 +46,11 @@ parser.add_argument('--attention', dest='attention',  type=int, default=0)
 parser.add_argument('--depth', dest='depth',  type=int, default=3)
 parser.add_argument('--debug', dest='debug', action='store_true')
 parser.add_argument('--only_one', dest='only_one', action='store_true')
+parser.add_argument('--revert', dest='revert', action='store_true')
+parser.add_argument('--add_history', dest='add_history', action='store_true')
 
 args = parser.parse_args()
 
-debug = args.debug
 only_one = args.only_one
 
 vocab = {}
@@ -124,18 +125,21 @@ for i in range(1, depth_num+1):
   f1 = open('tttx'+str(i)+'.tmp')
   for line in f1:
     line = line.strip()
-    if debug:
+    if args.debug:
        print("\nl#l",line)
     line = line[1:-1]
     while len(line)>0:
       [el,line] = split_brackets(line)
       p= el.find(',')
       output = int(el[1:p])
-      data = el[p+1:]
-      if debug:
+      if args.add_history:
+        data = el[p+1:] + line   #history of the search is kept, you probably have to revert the data additionally
+      else:
+        data = el[p+1:]
+      if args.debug:
           print(el,"-",output,"-",data)
       if data not in only_one_data:
-        if only_one:
+        if args.only_one:
           only_one_data[data]=1
         train_data.append((int(output), data))
         if len(data) > max_length:
@@ -341,7 +345,8 @@ print(model.summary())
 
 def str_to_int_list(x, ml):
     # uncomment for reverse
-    #x = x[::-1]
+    if args.revert:
+      x = x[::-1]
     # uncomment for all the same length
     #x = ('{:>'+str(ml)+'}').format(x[-ml:])
     ret = []
