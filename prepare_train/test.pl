@@ -33,13 +33,13 @@ eqn1(7,[mult,X,Y],[mult,X1,Y1],CC,DD,VV,NN):-is(Z1,[lower,CC,DD]), is(C1,[add,CC
 eqn1(8,X,Y,CC,DD,VV,NN):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), try(T1), eqn1(T1,X,Z,C1,DD,VV,VV1), try(T2), eqn1(T2,Z,Y,C1,DD,VV1,NN).
 
 
-eqn2(X,Y,CC,DD,F1,F2):-eqn1(T,X,Y,CC,DD,[],NN),is(RR,[write,F1,NN]),is(RRR,[write,F2,track]).
-eqn2(ee,Y,1,1,tttx1,tttt1)?
-eqn2(nn,Y,1,1,tttx1,tttt1)?
-eqn2(ee,Y,1,2,tttx2,tttt2)?
-eqn2(nn,Y,1,2,tttx2,tttt2)?
-eqn2(ee,Y,1,3,tttx3,tttt3)?
-eqn2(nn,Y,1,3,tttx3,tttt3)?
-eqn2(ee,Y,1,4,tttx4,tttt4)?
-eqn2(nn,Y,1,4,tttx4,tttt4)?
+eqn2(X,Y,CC,DD,F1):-eqn1(T,X,Y,CC,DD,[],NN),is(RR,[write,F1,NN]).
+eqn2(ee,Y,1,1,tttx1)?
+eqn2(nn,Y,1,1,tttx1)?
+eqn2(ee,Y,1,2,tttx2)?
+eqn2(nn,Y,1,2,tttx2)?
+eqn2(ee,Y,1,3,tttx3)?
+eqn2(nn,Y,1,3,tttx3)?
+eqn2(ee,Y,1,4,tttx4)?
+eqn2(nn,Y,1,4,tttx4)?
 
