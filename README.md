@@ -17,12 +17,8 @@ as only the first three guesses of the rnn are used.
 
 ToDo:
 
-- not clear, how to allow broad search with it? But maybe it must not be handled by the engine immediatly, but can be done by code as 
-
-eqn1([mult,X,Y],[mult,X1,Y1],CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]), eqn1(X,X1,C1,DD), eqn1(Y,Y1,C1,DD).
-eqn1(X,Y,CC,DD):-is(Z1,[lower,CC,DD]), is(C1,[add,CC,1]),eqn1(X,Z,C1,DD),eqn1(Z,Y,C1,DD).
-
-
+- there seems to be a bug with recording track_for_ai, backtracking leaving one:
+ ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), ('is', '[_0,[rnn,[mmod,[mult,[p,gproof],new],xproof],5]]'), ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), ('is', '[_0,[rnn,[mmod,[mult,[p,gproof],new],xproof],5]]'), ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), 
 
 rnn support:
 at the moment is(X,[rnn,term,mode]) and rnn(X,[term,mode]) is supported
