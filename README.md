@@ -17,8 +17,7 @@ as only the first three guesses of the rnn are used.
 
 ToDo:
 
-- there seems to be a bug with recording track_for_ai, backtracking leaving one:
- ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), ('is', '[_0,[rnn,[mmod,[mult,[p,gproof],new],xproof],5]]'), ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), ('is', '[_0,[rnn,[mmod,[mult,[p,gproof],new],xproof],5]]'), ('predict2', 1, '[[mmod,[mult,[p,gproof],new],xproof],_0,isdeb]'), 
+
 
 rnn support:
 at the moment is(X,[rnn,term,mode]) and rnn(X,[term,mode]) is supported
