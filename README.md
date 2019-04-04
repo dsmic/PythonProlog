@@ -14,6 +14,8 @@ and started python3 main.py
 The search space seems to be drastically reduced, but it is not guarantied, that the proof succeeds, 
 as only the first three guesses of the rnn are used.
 
+First test with using the probabilities of the rnn for clause choosing were successful. 
+
 
 ToDo:
 
