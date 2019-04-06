@@ -29,7 +29,6 @@ import keras.backend
 ###########################################
 
 
-
 import argparse
 from random import shuffle
 
@@ -46,8 +45,18 @@ parser.add_argument('--only_one', dest='only_one', action='store_true')
 parser.add_argument('--revert', dest='revert', action='store_true')
 parser.add_argument('--add_history', dest='add_history', action='store_true')
 parser.add_argument('--RNN_type', dest='RNN_type',  type=str, default='CuDNNLSTM')
+parser.add_argument('--gpu_mem', dest='gpu_mem',  type=float, default=1)
 
 args = parser.parse_args()
+
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = args.gpu_mem
+set_session(tf.Session(config=config))
+
+
+
 
 RNN_type = {}
 RNN_type['CuDNNLSTM'] = CuDNNLSTM
