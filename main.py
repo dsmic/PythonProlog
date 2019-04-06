@@ -356,7 +356,7 @@ def ask(predicate, infolist, bounds, cut_count):
                 yield t, new_bounds
             else:
                 if track_for_ai:
-                    track_for_ai[0] = local_track
+                    track_for_ai[0] = local_track[:]
                 yield False, bounds
         elif isinstance(contains, rnn): #is predicate
             for (t, new_bounds) in contains.do_calc(infolist, bounds):
@@ -369,7 +369,7 @@ def ask(predicate, infolist, bounds, cut_count):
                     yield t, new_bounds
                 else:
                     if track_for_ai:
-                        track_for_ai[0] = local_track
+                        track_for_ai[0] = local_track[:]
                     yield False, bounds
         elif isinstance(contains, cut): #cut predicate
             cut_count[0] = 0 # the last cut overwrites all other cuts in the rule
@@ -383,7 +383,7 @@ def ask(predicate, infolist, bounds, cut_count):
                         local_count += 1
                         track_for_ai[0] += [(predicate, 0)]
                     else:
-                        track_for_ai[0] = local_track
+                        track_for_ai[0] = local_track[:]
                 yield xx
         elif isinstance(contains, repeat):
             how_often = int(final_bound(infolist.A, bounds))
@@ -418,10 +418,10 @@ def ask(predicate, infolist, bounds, cut_count):
                                     track_for_ai[0] += [(predicate, local_count, formatl(line.A, last_bounds, {}))]
                                     last_bounds = b_ai
                                 else:
-                                    track_for_ai[0] = local_track
+                                    track_for_ai[0] = local_track[:]
                             yield x0
                     if track_for_ai:
-                        track_for_ai[0] = local_track
+                        track_for_ai[0] = local_track[:]
                     if cut_count_local[0] > 1:
                         break
                     yield False, bounds
@@ -435,7 +435,7 @@ def ask(predicate, infolist, bounds, cut_count):
                         yield True, new_bounds
                     else:
                         if track_for_ai:
-                            track_for_ai[0] = local_track
+                            track_for_ai[0] = local_track[:]
                         yield False, bounds
 
 def ask_print(predicate, infolist, bounds, wait_for_enter):
@@ -714,9 +714,12 @@ setup_rnn('final_eqn0.hdf5')
 
 #print_assertz_data()
 
-# start prolog promt
+
 init_data()
 load_file('prooftest.pl')
+
+
+# start prolog promt
 #prolog()
 #load_file('deb.pl')
 
