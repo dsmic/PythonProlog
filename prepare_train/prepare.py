@@ -12,7 +12,7 @@ Created on Fri Feb  1 15:50:23 2019
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 from random import shuffle
-from random import random
+from random import random, randint
 
 import numpy as np
 from keras.utils import to_categorical
@@ -46,6 +46,8 @@ parser.add_argument('--revert', dest='revert', action='store_true')
 parser.add_argument('--add_history', dest='add_history', action='store_true')
 parser.add_argument('--RNN_type', dest='RNN_type',  type=str, default='CuDNNLSTM')
 parser.add_argument('--gpu_mem', dest='gpu_mem',  type=float, default=1)
+parser.add_argument('--fill_vars_with_atoms', dest='fill_vars_with_atoms', action='store_true')
+parser.add_argument('--rand_atoms', dest='rand_atoms', action='store_true')
 
 args = parser.parse_args()
 
@@ -103,6 +105,16 @@ expression_depth = {} #do not overwrite lower depth
 
 used_atoms = ['xproof', 'new', 'gproof', 'p', 'empty', 'ee', 'nn']
 
+def random_atoms(max_length, number):
+  atoms =[]
+  for _ in range(number):
+    length = randint(1,max_length)
+    atom = ''
+    for _ in range(length):
+      atom+=chr(randint(ord('a'),ord('z')))
+    atoms.append(atom)
+  return atoms
+
 #handle manual written clause input to clause selection log file
 
 def split_brackets(sss):
@@ -149,6 +161,12 @@ for i in range(1, depth_num+1):
         data = el[p+1:] + line   #history of the search is kept, you probably have to revert the data additionally
       else:
         data = el[p+1:]
+      if args.fill_vars_with_atoms:
+        if args.rand_atoms:
+          used_atoms = random_atoms(6,7)
+        shuffle(used_atoms)
+        for ir in range(len(used_atoms)):
+          data = data.replace('_'+str(ir),used_atoms[ir])
       if args.debug:
           print(el,"-",output,"-",data)
       if data not in only_one_data:
