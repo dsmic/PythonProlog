@@ -38,7 +38,7 @@ parser.add_argument('--epochs', dest='epochs',  type=int, default=50)
 parser.add_argument('--hidden_size', dest='hidden_size',  type=int, default=50)
 parser.add_argument('--final_name', dest='final_name',  type=str, default='final_model')
 parser.add_argument('--pretrained_name', dest='pretrained_name',  type=str, default=None)
-parser.add_argument('--attention', dest='attention',  type=int, default=0)
+parser.add_argument('--attention', dest='attention', action='store_true')
 parser.add_argument('--depth', dest='depth',  type=int, default=3)
 parser.add_argument('--debug', dest='debug', action='store_true')
 parser.add_argument('--only_one', dest='only_one', action='store_true')
@@ -48,6 +48,7 @@ parser.add_argument('--RNN_type', dest='RNN_type',  type=str, default='CuDNNLSTM
 parser.add_argument('--gpu_mem', dest='gpu_mem',  type=float, default=1)
 parser.add_argument('--fill_vars_with_atoms', dest='fill_vars_with_atoms', action='store_true')
 parser.add_argument('--rand_atoms', dest='rand_atoms', action='store_true')
+parser.add_argument('--float_type', dest='float_type',  type=str, default='float32')
 
 args = parser.parse_args()
 
@@ -57,6 +58,7 @@ config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = args.gpu_mem
 set_session(tf.Session(config=config))
 
+keras.backend.set_floatx(args.float_type)
 
 
 
@@ -346,7 +348,7 @@ else:
   inputs = Input(shape=(None,))
   embeds = Embedding(len(vocab), len(vocab), embeddings_initializer='identity', trainable=True)(inputs)
   lstm1 = LSTM_use(hidden_size, return_sequences=True)(embeds)
-  if args.attention == 1:
+  if args.attention:
     lstm1b = Lambda(attentions_layer)(lstm1)
   else:
     lstm1b = lstm1
