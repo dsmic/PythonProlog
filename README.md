@@ -7,7 +7,7 @@ This version can proof infinity of prime numbers from a set of rules without int
 
 it is trained in the prepareAI directory by 
 
-First run python3 ../main.py to generate the training data (ignore file not found error at the end of ececution) and than 
+First run python3 ../main.py to generate the training data (ignore file not found error at the end of execution) and than 
 
 python3 prepare.py --lr 0.0001 (you will need GPU support or use --RNN_type GRU parameter to support cpu gru layers),
 
