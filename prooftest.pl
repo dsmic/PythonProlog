@@ -24,8 +24,9 @@ predict1(X,Y):-repeat(10), is(Y,[rnn,X,10]).
 predict1(X,Y1):-is(Y,[rnn,X,best]),is(ZZ,[write,predict,[predict,X,Y]]).
 predict1(X,Y):-rnn(Y,[X,3,0]),is(ZZ,[write,predict,[predict,X,Y]]).
 
-predict22(X,Y, DEB):-rnn(Y,[X,2,10,DEB]).
-predict2(X,Y,isdeb):-is(Y,[rnn,X,5]).
+predict22(X,Y, DEB):-rnn(Y,[X,2,0,DEB]).
+predict2(X,Y,isdeb):-is(Y,[rnn,X,0]).
+predict22(X,Y,isdeb):-is(Y,[rand,0,16]).
 
 predict22(X,Y,debug).
 

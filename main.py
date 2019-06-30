@@ -23,6 +23,8 @@ import numpy as np
 # uncomment to add some editing features to the input command
 # import readline #@UnusedVariable
 
+import keras.backend
+keras.backend.set_floatx('float64')
 
 only_one_answer = False
 
@@ -693,6 +695,7 @@ def setup_rnn(model_name):
     global model, ml
     from keras.models import load_model
     model = load_model(model_name)
+    print(model.summary())
     ml = model.layers[0].input_shape[1]
 
 
