@@ -24,7 +24,7 @@ import numpy as np
 # import readline #@UnusedVariable
 
 import keras.backend
-keras.backend.set_floatx('float64')
+#keras.backend.set_floatx('float64')
 
 only_one_answer = False
 
